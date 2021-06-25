@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{20b90ce4-7fcb-4731-b9a0-075f875de82d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources">
+      <UniqueIdentifier>{f18ab499-84e1-499f-8eff-9754361e0e52}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="gl3w">
+      <UniqueIdentifier>{42f99867-3108-43b8-99d0-fabefaf1f2e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\MyCode">
+      <UniqueIdentifier>{9d45ef9d-f8ae-4228-9e16-4f27ea442426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\MyCode\Loaders">
+      <UniqueIdentifier>{444ef189-b34f-4e1d-b1b6-62f01fb4e35b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\MyCode\Unloaders">
+      <UniqueIdentifier>{18ba2c50-8749-44e8-9662-00dda220fd5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\MyCode\LoaderUnloader">
+      <UniqueIdentifier>{16092ab5-2fc7-4d80-937a-9271acdd67fa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\gl3w\GL\gl3w.c">
+      <Filter>gl3w</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_impl_glfw.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_impl_opengl3.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader_0_0_0.cpp">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClCompile>
+    <ClCompile Include="DataBase.cpp">
+      <Filter>sources\MyCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>sources\MyCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader.cpp">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Unloader.cpp">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Unloader_0_0_0.cpp">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Payment.cpp">
+      <Filter>sources\MyCode</Filter>
+    </ClCompile>
+    <ClCompile Include="MembershipFee.cpp">
+      <Filter>sources\MyCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui_impl_opengl2.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Electricity.cpp">
+      <Filter>sources\MyCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader_0_0_1.cpp">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Unloader_0_0_1.cpp">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Unloader_0_0_2.cpp">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader_0_0_2.cpp">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClCompile>
+    <ClCompile Include="LoaderUnloader\Loader_v2.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="LoaderUnloader\Unloader_v2.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\gl3w\GL\gl3w.h">
+      <Filter>gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\gl3w\GL\glcorearb.h">
+      <Filter>gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui_impl_glfw.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui_impl_opengl3.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="DataBase.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Homestead.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader_0_0_0.h">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader.h">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Versions.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Unloader.h">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Unloader_0_0_0.h">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Payment.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Date.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="MembershipFee.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="OpeningBalance.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Accural.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Electricity.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui_impl_opengl2.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader_0_0_1.h">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Unloader_0_0_1.h">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Unloader_0_0_2.h">
+      <Filter>sources\MyCode\Unloaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader_0_0_2.h">
+      <Filter>sources\MyCode\Loaders</Filter>
+    </ClInclude>
+    <ClInclude Include="LoaderUnloader\ClearLoaderUnloader.h">
+      <Filter>sources\MyCode</Filter>
+    </ClInclude>
+    <ClInclude Include="LoaderUnloader\TLoader_v2.h" />
+    <ClInclude Include="LoaderUnloader\Loader_v2.h" />
+    <ClInclude Include="LoaderUnloader\Unloader_v2.h" />
+    <ClInclude Include="LoaderUnloader\TUnloader_v2.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.txt" />
+    <None Include="..\..\misc\natvis\imgui.natvis">
+      <Filter>sources</Filter>
+    </None>
+  </ItemGroup>
+</Project>
