@@ -75,7 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)bin-int\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <TargetName>SNTDataBase</TargetName>
   </PropertyGroup>
@@ -87,7 +87,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)bin-int\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <TargetName>SNTDataBase</TargetName>
   </PropertyGroup>
@@ -173,17 +173,15 @@
     <ClCompile Include="..\imgui_impl_opengl2.cpp" />
     <ClCompile Include="..\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\libs\gl3w\GL\gl3w.c" />
-    <ClCompile Include="Accural.cpp" />
-    <ClCompile Include="Application.cpp" />
-    <ClCompile Include="DataBase.cpp" />
-    <ClCompile Include="Electricity.cpp" />
-    <ClCompile Include="Homestead.cpp" />
-    <ClCompile Include="LoaderUnloader\JsonLoaderUnloader.cpp" />
-    <ClCompile Include="LoaderUnloader\Loader_v2.cpp" />
-    <ClCompile Include="LoaderUnloader\Unloader_v2.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MembershipFee.cpp" />
-    <ClCompile Include="Payment.cpp" />
+    <ClCompile Include="src\Accural.cpp" />
+    <ClCompile Include="src\Core\Application.cpp" />
+    <ClCompile Include="src\DataBase.cpp" />
+    <ClCompile Include="src\Electricity.cpp" />
+    <ClCompile Include="src\Homestead.cpp" />
+    <ClCompile Include="src\LoaderUnloader\JsonLoaderUnloader.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MembershipFee.cpp" />
+    <ClCompile Include="src\Payment.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\imconfig.h" />
@@ -194,25 +192,17 @@
     <ClInclude Include="..\imgui_impl_opengl3.h" />
     <ClInclude Include="..\libs\gl3w\GL\gl3w.h" />
     <ClInclude Include="..\libs\gl3w\GL\glcorearb.h" />
-    <ClInclude Include="Accural.h" />
-    <ClInclude Include="Application.h" />
-    <ClInclude Include="JsonLoader.h" />
-    <ClInclude Include="JsonUnloader.h" />
-    <ClInclude Include="LoaderUnloader\ClearLoaderUnloader.h" />
-    <ClInclude Include="DataBase.h" />
-    <ClInclude Include="Date.h" />
-    <ClInclude Include="Electricity.h" />
-    <ClInclude Include="Homestead.h" />
-    <ClInclude Include="LoaderUnloader\JsonLoaderUnloader.h" />
-    <ClInclude Include="LoaderUnloader\Loader_v2.h" />
-    <ClInclude Include="LoaderUnloader\TLoader_v2.h" />
-    <ClInclude Include="LoaderUnloader\TUnloader_v2.h" />
-    <ClInclude Include="LoaderUnloader\Unloader_v2.h" />
-    <ClInclude Include="MembershipFee.h" />
-    <ClInclude Include="nlohmann\JsonUtils.h" />
-    <ClInclude Include="OpeningBalance.h" />
-    <ClInclude Include="Payment.h" />
-    <ClInclude Include="Versions.h" />
+    <ClInclude Include="src\Accural.h" />
+    <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\DataBase.h" />
+    <ClInclude Include="src\Date.h" />
+    <ClInclude Include="src\Electricity.h" />
+    <ClInclude Include="src\Homestead.h" />
+    <ClInclude Include="src\LoaderUnloader\JsonLoaderUnloader.h" />
+    <ClInclude Include="src\MembershipFee.h" />
+    <ClInclude Include="src\OpeningBalance.h" />
+    <ClInclude Include="src\Payment.h" />
+    <ClInclude Include="src\Versions.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\misc\natvis\imgui.natvis" />

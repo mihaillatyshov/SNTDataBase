@@ -25,9 +25,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -49,37 +46,34 @@
     <ClCompile Include="..\..\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="DataBase.cpp">
-      <Filter>sources\MyCode</Filter>
-    </ClCompile>
-    <ClCompile Include="Application.cpp">
-      <Filter>sources\MyCode</Filter>
-    </ClCompile>
-    <ClCompile Include="Payment.cpp">
-      <Filter>sources\MyCode</Filter>
-    </ClCompile>
-    <ClCompile Include="MembershipFee.cpp">
-      <Filter>sources\MyCode</Filter>
-    </ClCompile>
     <ClCompile Include="..\imgui_impl_opengl2.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="Electricity.cpp">
-      <Filter>sources\MyCode</Filter>
-    </ClCompile>
-    <ClCompile Include="LoaderUnloader\Loader_v2.cpp">
+    <ClCompile Include="src\Accural.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="LoaderUnloader\Unloader_v2.cpp">
+    <ClCompile Include="src\Core\Application.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="LoaderUnloader\JsonLoaderUnloader.cpp">
+    <ClCompile Include="src\DataBase.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="Homestead.cpp">
+    <ClCompile Include="src\Electricity.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="Accural.cpp">
+    <ClCompile Include="src\Homestead.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MembershipFee.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Payment.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LoaderUnloader\JsonLoaderUnloader.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -105,54 +99,20 @@
     <ClInclude Include="..\imgui_impl_opengl3.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="Application.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="DataBase.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Homestead.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Versions.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Payment.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Date.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="MembershipFee.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="OpeningBalance.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Accural.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Electricity.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
     <ClInclude Include="..\imgui_impl_opengl2.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="LoaderUnloader\ClearLoaderUnloader.h">
-      <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="LoaderUnloader\TLoader_v2.h" />
-    <ClInclude Include="LoaderUnloader\Loader_v2.h" />
-    <ClInclude Include="LoaderUnloader\Unloader_v2.h" />
-    <ClInclude Include="LoaderUnloader\TUnloader_v2.h" />
-    <ClInclude Include="JsonLoader.h">
-      <Filter>sources\MyCode\LoaderUnloader</Filter>
-    </ClInclude>
-    <ClInclude Include="JsonUnloader.h">
-      <Filter>sources\MyCode\LoaderUnloader</Filter>
-    </ClInclude>
-    <ClInclude Include="LoaderUnloader\JsonLoaderUnloader.h" />
-    <ClInclude Include="nlohmann\JsonUtils.h" />
+    <ClInclude Include="src\Accural.h" />
+    <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\DataBase.h" />
+    <ClInclude Include="src\Date.h" />
+    <ClInclude Include="src\Electricity.h" />
+    <ClInclude Include="src\Homestead.h" />
+    <ClInclude Include="src\MembershipFee.h" />
+    <ClInclude Include="src\OpeningBalance.h" />
+    <ClInclude Include="src\Payment.h" />
+    <ClInclude Include="src\Versions.h" />
+    <ClInclude Include="src\LoaderUnloader\JsonLoaderUnloader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.txt" />
