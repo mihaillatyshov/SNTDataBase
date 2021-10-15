@@ -5,6 +5,7 @@
 #include "MembershipFee.h"
 #include "Accural.h"
 #include "Electricity.h"
+#include <nlohmann/json.hpp>
 
 namespace LM
 {
@@ -12,15 +13,15 @@ namespace LM
     class Homestead
     {
     public:
-        std::string m_Number;
-        std::string m_Surname;
-        std::string m_Forename;
-        std::string m_Patronymic;
-        std::string m_PhoneNumber;
-        std::string m_Note;
+        std::string m_Number        = "";
+        std::string m_Surname       = "";
+        std::string m_Forename      = "";
+        std::string m_Patronymic    = "";
+        std::string m_PhoneNumber   = "";
+        std::string m_Note          = "";
 
-        bool m_HasBenefits = false;
-        bool m_AddMembershipFees = true;
+        bool m_HasBenefits          = false;
+        bool m_AddMembershipFees    = true;
 
         MembershipFee m_MembershipFee;
         Electricity m_Electricity;
@@ -47,7 +48,8 @@ namespace LM
         inline std::string& GetNoteRef() { return m_Note; }
         inline MembershipFee& GetMembershipFeeRef() { return m_MembershipFee; }
 
-        //void DrawNumber(int id, bool isEdit);
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
     };
 
 }

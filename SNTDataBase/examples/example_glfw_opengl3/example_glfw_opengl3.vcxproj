@@ -73,10 +73,11 @@
     <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)libs\libxl\include_cpp;$(SolutionDir)libs\xlnt\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)libs\libxl\lib64;$(SolutionDir)libs\xlnt\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)bin-int\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <TargetName>SNTDataBase</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
@@ -84,10 +85,11 @@
     <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)libs\libxl\include_cpp;$(SolutionDir)libs\xlnt\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)libs\libxl\lib64;$(SolutionDir)libs\xlnt\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)bin-int\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <TargetName>SNTDataBase</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,11 +112,12 @@
       <AdditionalIncludeDirectories>..\..;..;..\libs\glfw\include;..\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FloatingPointModel>Strict</FloatingPointModel>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\libs\glfw\lib-vc2010-64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;libxl.lib;xlntd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -148,13 +151,14 @@
       <AdditionalIncludeDirectories>..\..;..;..\libs\glfw\include;..\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\libs\glfw\lib-vc2010-64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;xlnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -169,22 +173,17 @@
     <ClCompile Include="..\imgui_impl_opengl2.cpp" />
     <ClCompile Include="..\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\libs\gl3w\GL\gl3w.c" />
+    <ClCompile Include="Accural.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="DataBase.cpp" />
     <ClCompile Include="Electricity.cpp" />
-    <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="Homestead.cpp" />
+    <ClCompile Include="LoaderUnloader\JsonLoaderUnloader.cpp" />
     <ClCompile Include="LoaderUnloader\Loader_v2.cpp" />
     <ClCompile Include="LoaderUnloader\Unloader_v2.cpp" />
-    <ClCompile Include="Loader_0_0_0.cpp" />
-    <ClCompile Include="Loader_0_0_1.cpp" />
-    <ClCompile Include="Loader_0_0_2.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MembershipFee.cpp" />
     <ClCompile Include="Payment.cpp" />
-    <ClCompile Include="Unloader.cpp" />
-    <ClCompile Include="Unloader_0_0_0.cpp" />
-    <ClCompile Include="Unloader_0_0_1.cpp" />
-    <ClCompile Include="Unloader_0_0_2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\imconfig.h" />
@@ -197,26 +196,22 @@
     <ClInclude Include="..\libs\gl3w\GL\glcorearb.h" />
     <ClInclude Include="Accural.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="JsonLoader.h" />
+    <ClInclude Include="JsonUnloader.h" />
     <ClInclude Include="LoaderUnloader\ClearLoaderUnloader.h" />
     <ClInclude Include="DataBase.h" />
     <ClInclude Include="Date.h" />
     <ClInclude Include="Electricity.h" />
     <ClInclude Include="Homestead.h" />
-    <ClInclude Include="Loader.h" />
+    <ClInclude Include="LoaderUnloader\JsonLoaderUnloader.h" />
     <ClInclude Include="LoaderUnloader\Loader_v2.h" />
     <ClInclude Include="LoaderUnloader\TLoader_v2.h" />
     <ClInclude Include="LoaderUnloader\TUnloader_v2.h" />
     <ClInclude Include="LoaderUnloader\Unloader_v2.h" />
-    <ClInclude Include="Loader_0_0_0.h" />
-    <ClInclude Include="Loader_0_0_1.h" />
-    <ClInclude Include="Loader_0_0_2.h" />
     <ClInclude Include="MembershipFee.h" />
+    <ClInclude Include="nlohmann\JsonUtils.h" />
     <ClInclude Include="OpeningBalance.h" />
     <ClInclude Include="Payment.h" />
-    <ClInclude Include="Unloader.h" />
-    <ClInclude Include="Unloader_0_0_0.h" />
-    <ClInclude Include="Unloader_0_0_1.h" />
-    <ClInclude Include="Unloader_0_0_2.h" />
     <ClInclude Include="Versions.h" />
   </ItemGroup>
   <ItemGroup>

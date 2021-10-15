@@ -49,23 +49,11 @@
     <ClCompile Include="..\..\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Loader_0_0_0.cpp">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClCompile>
     <ClCompile Include="DataBase.cpp">
       <Filter>sources\MyCode</Filter>
     </ClCompile>
     <ClCompile Include="Application.cpp">
       <Filter>sources\MyCode</Filter>
-    </ClCompile>
-    <ClCompile Include="Loader.cpp">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClCompile>
-    <ClCompile Include="Unloader.cpp">
-      <Filter>sources\MyCode\Unloaders</Filter>
-    </ClCompile>
-    <ClCompile Include="Unloader_0_0_0.cpp">
-      <Filter>sources\MyCode\Unloaders</Filter>
     </ClCompile>
     <ClCompile Include="Payment.cpp">
       <Filter>sources\MyCode</Filter>
@@ -79,22 +67,19 @@
     <ClCompile Include="Electricity.cpp">
       <Filter>sources\MyCode</Filter>
     </ClCompile>
-    <ClCompile Include="Loader_0_0_1.cpp">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClCompile>
-    <ClCompile Include="Unloader_0_0_1.cpp">
-      <Filter>sources\MyCode\Unloaders</Filter>
-    </ClCompile>
-    <ClCompile Include="Unloader_0_0_2.cpp">
-      <Filter>sources\MyCode\Unloaders</Filter>
-    </ClCompile>
-    <ClCompile Include="Loader_0_0_2.cpp">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClCompile>
     <ClCompile Include="LoaderUnloader\Loader_v2.cpp">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="LoaderUnloader\Unloader_v2.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="LoaderUnloader\JsonLoaderUnloader.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Homestead.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Accural.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -129,20 +114,8 @@
     <ClInclude Include="Homestead.h">
       <Filter>sources\MyCode</Filter>
     </ClInclude>
-    <ClInclude Include="Loader_0_0_0.h">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Loader.h">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClInclude>
     <ClInclude Include="Versions.h">
       <Filter>sources\MyCode</Filter>
-    </ClInclude>
-    <ClInclude Include="Unloader.h">
-      <Filter>sources\MyCode\Unloaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Unloader_0_0_0.h">
-      <Filter>sources\MyCode\Unloaders</Filter>
     </ClInclude>
     <ClInclude Include="Payment.h">
       <Filter>sources\MyCode</Filter>
@@ -165,18 +138,6 @@
     <ClInclude Include="..\imgui_impl_opengl2.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="Loader_0_0_1.h">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Unloader_0_0_1.h">
-      <Filter>sources\MyCode\Unloaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Unloader_0_0_2.h">
-      <Filter>sources\MyCode\Unloaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Loader_0_0_2.h">
-      <Filter>sources\MyCode\Loaders</Filter>
-    </ClInclude>
     <ClInclude Include="LoaderUnloader\ClearLoaderUnloader.h">
       <Filter>sources\MyCode</Filter>
     </ClInclude>
@@ -184,6 +145,14 @@
     <ClInclude Include="LoaderUnloader\Loader_v2.h" />
     <ClInclude Include="LoaderUnloader\Unloader_v2.h" />
     <ClInclude Include="LoaderUnloader\TUnloader_v2.h" />
+    <ClInclude Include="JsonLoader.h">
+      <Filter>sources\MyCode\LoaderUnloader</Filter>
+    </ClInclude>
+    <ClInclude Include="JsonUnloader.h">
+      <Filter>sources\MyCode\LoaderUnloader</Filter>
+    </ClInclude>
+    <ClInclude Include="LoaderUnloader\JsonLoaderUnloader.h" />
+    <ClInclude Include="nlohmann\JsonUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.txt" />

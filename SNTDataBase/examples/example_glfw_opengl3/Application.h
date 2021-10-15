@@ -243,6 +243,8 @@ namespace LM
         std::vector<std::tuple<std::string, ElectricityAccural>> m_DropInfoAccurals;
         bool m_EditTariffOnLoad = false;
         ElectricityAccuralCosts m_ElectricityAccuralCostsIntermediate;
+
+        bool m_ShowDemoWindow = false;
     };
 
 }

@@ -1,5 +1,7 @@
 #include "Payment.h"
 
+#include <nlohmann/JsonUtils.h>
+
 namespace LM
 {
 
@@ -7,12 +9,12 @@ namespace LM
     // Date ////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
 
-    bool Date::DrawDateEdit()
+    bool Date::DrawEdit()
     {
         bool IsChange = false;
         ImGui::PushItemWidth(100);
         ImGui::Text(u8"Год"); ImGui::SameLine();
-        if (ImGui::InputInt(u8"##Год", &Year))
+        if (ImGui::InputInt(u8"##Год", &m_Year))
         {
             FixDate();
             IsChange = true;
@@ -22,7 +24,7 @@ namespace LM
 
         ImGui::PushItemWidth(80);
         ImGui::Text(u8"Месяц"); ImGui::SameLine();
-        if (ImGui::InputInt(u8"##Месяц", &Month))
+        if (ImGui::InputInt(u8"##Месяц", &m_Month))
         {
             FixDate();
             IsChange = true;
@@ -30,7 +32,7 @@ namespace LM
         ImGui::SameLine();
 
         ImGui::Text(u8"День"); ImGui::SameLine();
-        if (ImGui::InputInt(u8"##День", &Day))
+        if (ImGui::InputInt(u8"##День", &m_Day))
         {
             FixDate();
             IsChange = true;
@@ -41,63 +43,84 @@ namespace LM
 
     }
 
+    const std::string Date::GetString() const
+    {
+        char date[20]{ 0 };
+        sprintf(date, u8"%02d.%02d.%d", m_Day, m_Month, m_Year);
+        return date;
+    }
 
     void Date::FixDate()
     {
         int MinYear = 0;
-            if (Year < MinYear)
-                Year = MinYear;
+            if (m_Year < MinYear)
+                m_Year = MinYear;
 
         int MinMonth = 1; int MaxMonth = 12;
-        if (Month < MinMonth)
-            Month = MinMonth;
-        else if (Month > MaxMonth)
-            Month = MaxMonth;
+        if (m_Month < MinMonth)
+            m_Month = MinMonth;
+        else if (m_Month > MaxMonth)
+            m_Month = MaxMonth;
 
-        int MinDay = 1; int MaxDay = DaysInMonth[Month - 1];
-        if (Year % 4 == 0) MaxDay++;
-        if (Day < MinDay)
-            Day = MinDay;
-        else if (Day > MaxDay)
-            Day = MaxDay;
+        int MinDay = 1; int MaxDay = DaysInMonth[m_Month - 1];
+        if (m_Year % 4 == 0) MaxDay++;
+        if (m_Day < MinDay)
+            m_Day = MinDay;
+        else if (m_Day > MaxDay)
+            m_Day = MaxDay;
     }
 
+    nlohmann::basic_json<> Date::GetJson() const
+    {
+        nlohmann::basic_json<> result;
+        result["Year"]  = m_Year;
+        result["Month"] = m_Month;
+        result["Day"]   = m_Day;
 
-    
+        return result;
+    }
+
+    void Date::SetJson(nlohmann::basic_json<> js)
+    {
+        if (!js.is_object())
+            return;
+
+        nlohmann::SetValue(m_Year,  js, "Year");
+        nlohmann::SetValue(m_Month, js, "Month");
+        nlohmann::SetValue(m_Day,   js, "Day");
+    }
+ 
     bool operator<(const Date& left, const Date& right)
     {
-        if (left.Year < right.Year)
+        if (left.m_Year < right.m_Year)
             return true;
-        else if (left.Year > right.Year)
+        else if (left.m_Year > right.m_Year)
             return false;
 
-        if (left.Month < right.Month)
+        if (left.m_Month < right.m_Month)
             return true;
-        else if (left.Month > right.Month)
+        else if (left.m_Month > right.m_Month)
             return false;
 
-        if (left.Day < right.Day)
+        if (left.m_Day < right.m_Day)
             return true;
-         //else if (left.Day > right.Day)
-         //   return false;
 
         return false;
     }
 
-
     bool operator>(const Date& left, const Date& right)
     {
-        if (left.Year > right.Year)
+        if (left.m_Year > right.m_Year)
             return true;
-        else if (left.Year < right.Year)
+        else if (left.m_Year < right.m_Year)
             return false;
 
-        if (left.Month > right.Month)
+        if (left.m_Month > right.m_Month)
             return true;
-        else if (left.Month < right.Month)
+        else if (left.m_Month < right.m_Month)
             return false;
 
-        if (left.Day > right.Day)
+        if (left.m_Day > right.m_Day)
             return true;
          //else if (left.Day < right.Day)
          //   return false;
@@ -105,22 +128,18 @@ namespace LM
         return false;
     }
 
-
     bool operator==(const Date& left, const Date& right)
     {
-        if (left.Year == right.Year && left.Month == right.Month && left.Day == right.Day)
+        if (left.m_Year == right.m_Year && left.m_Month == right.m_Month && left.m_Day == right.m_Day)
             return true;
 
         return false;
     }
-
-
-    
+        
     bool operator<=(const Date& left, const Date& right)
     {
         return !(left > right);
     }
-
 
     bool operator>=(const Date& left, const Date& right)
     {
@@ -128,10 +147,25 @@ namespace LM
     }
 
 
-
     ////////////////////////////////////////////////////////////////////////////////
     // Money ///////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
+
+    nlohmann::basic_json<> Money::GetJson() const
+    {
+        nlohmann::basic_json<> result;
+        result["Amount"] = m_Amount;
+
+        return result;
+    }
+
+    void Money::SetJson(nlohmann::basic_json<> js)
+    {
+        if (!js.is_object())
+            return;
+
+        nlohmann::SetValue(m_Amount, js, "Amount");
+    }
 
     bool Money::DrawEdit(const std::string &fieldName)
     {
@@ -154,21 +188,7 @@ namespace LM
         ImGui::PopItemWidth();
 
         return isEdit;
-        //char label[100];
-        //sprintf(label, "%lld.%02lld", m_Amount / 100, abs(m_Amount % 100));
-        //
-        //ImGui::PushItemWidth(250);
-        //if (ImGui::InputText(u8"Сумма платежа", label, 100, ImGuiInputTextFlags_CharsDecimal))
-        //{
-        //    long long Rub = 0, Cop = 0;
-        //    sscanf(label, "%lld.%02lld", &Rub, &Cop);
-        //
-        //    m_Amount = abs(Rub * 100) + abs(Cop);
-        //    if (Rub < 0) m_Amount = -m_Amount;
-        //}
-        //ImGui::PopItemWidth();
     }
-
 
     const Money operator+(const Money& left, const Money& right)
     {
@@ -184,12 +204,10 @@ namespace LM
         return val;
     }
 
-
     bool operator<(const Money& left, int right)
     {
         return left.m_Amount < right;
     }
-
 
     Money& operator+=(Money& left, const Money& right)
     {
@@ -202,48 +220,11 @@ namespace LM
         left.m_Amount -= right.m_Amount;
         return left;
     }
+
+
     ////////////////////////////////////////////////////////////////////////////////
     // Payment /////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
-
-    void Payment::DrawPayment(bool IsEdit)
-    {
-        if (IsEdit)
-        {
-            m_Date.DrawDateEdit();
-            m_Amount.DrawEdit(u8"Сумма платежа");
-            ImGui::PushItemWidth(250);
-            ImGui::Combo(u8"Форма платежа", &m_FormOfPayment, s_FormOfPaymentString.data(), s_FormOfPaymentString.size());
-            ImGui::PopItemWidth();
-            DrawDocumentNumberEdit();
-
-        }
-        else
-        {
-            m_Date.DrawDate();
-            m_Amount.Draw();
-            ImGui::Text(u8"Форма платежа: %s", s_FormOfPaymentString[m_FormOfPayment]);
-            DrawDocumentNumber();
-        }
-
-    }
-
-
-    bool Payment::DrawDeleteButton()
-    {
-        if (ImGui::Button(u8"Удалить платеж"))
-            return true;
-        return false;
-    }
-
-
-    bool Payment::DrawRestoreButton()
-    {
-        if (ImGui::Button(u8"Восстановить платеж"))
-            return true;
-        return false;
-    }
-
 
     void Payment::DrawDocumentNumberEdit()
     {
@@ -258,11 +239,32 @@ namespace LM
         ImGui::PopItemWidth();
     }
 
-
     std::ostream& operator<< (std::ostream& out, const Money money)
     {
         out << money.m_Amount / 100 << "." << money.m_Amount % 100;
         return out;
+    }
+
+    nlohmann::basic_json<> Payment::GetJson() const
+    {
+        nlohmann::basic_json<> result;
+        result["Amount"]            = m_Amount.GetJson();
+        result["Date"]              = m_Date.GetJson();
+        result["FormOfPayment"]     = m_FormOfPayment;
+        result["DocumentNumber"]    = m_DocumentNumber;
+
+        return result;
+    }
+
+    void Payment::SetJson(nlohmann::basic_json<> js)
+    {
+        if (!js.is_object())
+            return;
+
+        m_Amount.SetJson(js["Amount"]);
+        m_Date.SetJson(  js["Date"]);
+        nlohmann::SetValue(m_FormOfPayment,   js, "FormOfPayment");
+        nlohmann::SetValue(m_DocumentNumber,  js, "DocumentNumber");
     }
 
 

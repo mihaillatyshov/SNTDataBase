@@ -7,9 +7,13 @@
 namespace LM
 {
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // kilowatt ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+
     struct kilowatt
     {
-        long long m_Watt = 0;
+    public:
         kilowatt(long long kilowatts = 0, long long watts = 0)
         {
             m_Watt = kilowatts * 1000 + watts;
@@ -17,26 +21,59 @@ namespace LM
 
         bool DrawEdit(const std::string &fieldName);
 
-        
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
+
+    public:
         friend const kilowatt operator+(const kilowatt& left, const kilowatt& right);
         friend const kilowatt operator-(const kilowatt& left, const kilowatt& right);
-
         friend std::ostream& operator<< (std::ostream& out, const kilowatt kw);
+
+    public:
+        long long m_Watt = 0;
     };
 
 
-    struct ElectricityAccuralCosts
+    ////////////////////////////////////////////////////////////////////////////////
+    // OtherElectricityAccuralCost /////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+
+    class OtherElectricityAccuralCost
     {
-        ElectricityAccuralCosts(const Money& day, const Money& night, const std::vector<std::pair<std::string, Money>> constants)
-            : m_DayCost(day), m_NightCost(night), m_ConstantAccurals(constants) { }
+    public:
+        OtherElectricityAccuralCost() = default;
+        OtherElectricityAccuralCost(std::string_view _Name, const Money& _Money)
+            : m_Name(_Name), m_Money(_Money) { }
 
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
+
+    public:
+        std::string m_Name = "<NONE>";
+        Money m_Money;
+    };
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ElectricityAccuralCosts /////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+
+    class ElectricityAccuralCosts
+    {
+    public:
         ElectricityAccuralCosts() = default;
+        ElectricityAccuralCosts(const Money& day, const Money& night, const std::vector<OtherElectricityAccuralCost> constants)
+            : m_Day(day), m_Night(night), m_Others(constants) { }
 
-        Money m_DayCost = Money(6, 57);
-        Money m_NightCost = Money(4, 13);
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
+
+    public:
+        Money m_Day   = Money(6, 57);
+        Money m_Night = Money(4, 13);
 
         // Sum of standart constants = 141
-        std::vector<std::pair<std::string, Money>> m_ConstantAccurals
+        std::vector<OtherElectricityAccuralCost> m_Others
         {
             { u8"Обслуживающая организация", Money(60) },
             { u8"Сервер", Money(25) },
@@ -48,6 +85,10 @@ namespace LM
 
     class ElectricityAccural
     {
+    public:
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
+        inline kilowatt GetAllMonth() const { return m_Day + m_Night; }
     public:
         Date m_Date;
         kilowatt m_Day;
@@ -65,17 +106,20 @@ namespace LM
 
         void Recalculate(bool HasBenefits);
         void SortPayments();
-    protected:
-        void Sort();
-    public:
+
         static Money CalcMonthMoney(long long KWatt, const Money& Cost);
         static Money CalcLosses(const Money& day, const Money& night);
         static Money CalcWithBenefits(const Money& day, const Money& night, bool hasBenefits);
         Money CalcAccuralsToDate(const Date& date, bool HasBenefits); // Include this Date
+
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
+    protected:
+        void Sort();
     public:
         Money m_All;
         Money m_OpeningBalance;
-        std::vector<Payment> m_ElectricityPayment;
-        std::vector<ElectricityAccural> m_ElectricityAccural;
+        std::vector<Payment> m_Payments;
+        std::vector<ElectricityAccural> m_Accurals;
     };
 }

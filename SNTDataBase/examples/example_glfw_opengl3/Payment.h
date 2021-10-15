@@ -5,6 +5,7 @@
 #include <string>
 
 #include "imgui.h"
+#include <nlohmann/json.hpp>
 
 
 namespace LM
@@ -18,20 +19,19 @@ namespace LM
     {
         static inline std::vector<int> DaysInMonth { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-        bool DrawDateEdit();
-        inline void DrawDate() { ImGui::Text("%02d.%02d.%d", Day, Month, Year); }
-        const std::string GetStringDate() const
-        {
-            char date[20]{0};
-            sprintf(date, u8"%02d.%02d.%d", Day, Month, Year);
-            return date;
-        }
+        bool DrawEdit();
+        inline void Draw() { ImGui::Text("%02d.%02d.%d", m_Day, m_Month, m_Year); }
+
+        const std::string GetString() const;
 
         void FixDate();
 
-        int Year = 2019;
-        int Month = 1;
-        int Day = 1;
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
+
+        int m_Year = 2019;
+        int m_Month = 1;
+        int m_Day = 1;
 
         friend bool operator<(const Date& left, const Date& right);
         friend bool operator>(const Date& left, const Date& right);
@@ -56,6 +56,9 @@ namespace LM
             sscanf(lable, "%lld.%02lld", &rub, &cop);
             m_Amount = rub * 100 + abs(cop);
         }
+
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
 
         void Draw() { ImGui::Text(u8"%lld.%02lld руб", m_Amount / 100, abs(m_Amount % 100)); }
         void DrawAbs() { ImGui::Text(u8"%lld.%02lld руб", abs(m_Amount / 100), abs(m_Amount % 100)); }        
@@ -92,29 +95,17 @@ namespace LM
         Date m_Date;
         int m_FormOfPayment;
         std::string m_DocumentNumber;
-        //bool m_IsActive = true;
     public:
         Payment()
             : m_FormOfPayment(0), m_DocumentNumber("") { }
-
-        bool DrawPaymentBegin() { return ImGui::TreeNode(u8"Платеж", u8"Платеж %9s, %7s, %02d.%02d.%d, %12lld.%02lld руб", GetFormOfPayment().data(), m_DocumentNumber.c_str(), m_Date.Day, m_Date.Month, m_Date.Year, m_Amount.m_Amount / 100, abs(m_Amount.m_Amount % 100)); }
-
-        void DrawPaymentEnd() { ImGui::TreePop(); }
-
-        void DrawPayment(bool IsEdit);
-
-        bool DrawDeleteButton();
-
-        bool DrawRestoreButton();
-
-        //inline void SetActive(bool isActive) { m_IsActive = isActive; }
 
         inline const Date &GetDate() const { return m_Date; }
         inline std::string_view GetFormOfPayment() { return s_FormOfPaymentString[m_FormOfPayment]; }
 
         inline Money& GetAmountRef() { return m_Amount; }
-        //inline bool IsActive() const { return m_IsActive; }
 
+        nlohmann::basic_json<> GetJson() const;
+        void SetJson(nlohmann::basic_json<> js);
     protected:
         void DrawDocumentNumberEdit();
 

@@ -4,6 +4,7 @@
 #include "Payment.h"
 #include "OpeningBalance.h"
 #include "Accural.h"
+#include <nlohmann/json.hpp>
 
 namespace LM
 {
@@ -25,13 +26,10 @@ namespace LM
         {
         }
 
-        void DrawMembershipFee(bool IsEdit);
-
         void SortPayments();
 
-        void DrawActivePayment(Payment &payment, int id, bool isEdit);
-        void DrawInactivePayment(Payment &payment, int id);
-        void DrawDeletePayment();
+        nlohmann::basic_json<> GetJson() const; 
+        void SetJson(nlohmann::basic_json<> js);
     };
 
 }
