@@ -1,11 +1,12 @@
 #pragma once
 
-#include "DataBase.h"
 #include <string>
-
 #include <array>
 #include <tuple>
 #include <unordered_map>
+#include <GLFW/glfw3.h>
+#include "Data/DataBase/DataBase.h"
+#include "Windows/TabsColumns/TabsColumns.h"
 
 
 namespace LM
@@ -75,8 +76,10 @@ namespace LM
                 Name = name;
                 FileName = "./res/" + name + ".column";
                 Widths = new float[names.size()];
+                int WindowWidth, WindowHeight;
+                glfwGetWindowSize(s_Application->m_Window, &WindowWidth, &WindowHeight);
                 for (int i = 0; i < names.size(); i++)
-                    Widths[i] = 100;
+                    Widths[i] = WindowWidth / names.size();
                 //ColumFilePaths.push_back("Columns/" + fileName + ".column");
                 ColumnsVector.push_back(this);
                 ColumnsMap[name] = this;
@@ -85,7 +88,14 @@ namespace LM
 
             static ColumnsInfo* Add(const std::string& name, const std::vector<std::string> names) { return new ColumnsInfo(name, names); }
             static void Clear() { for (auto& columnInfo : ColumnsMap) { auto& [name, info] = columnInfo; delete info; } } 
-            void DrawNames() { for (auto& name : Names) { Widths[ImGui::GetColumnIndex()] =  ImGui::GetColumnWidth(); ImGui::Text(name.c_str()); ImGui::NextColumn(); } }
+            void DrawNames() {
+                for (auto& name : Names)
+                {
+                    Widths[ImGui::GetColumnIndex()] =  ImGui::GetColumnWidth();
+                    ImGui::Text(name.c_str());
+                    ImGui::NextColumn();
+                }
+            }
 
 
             std::string Name;
@@ -161,7 +171,7 @@ namespace LM
         void LoadColumns();
         void SaveColumns();
     public:
-        Application();
+        Application(GLFWwindow* _Window);
         ~Application();
 
         void Run();
@@ -172,6 +182,8 @@ namespace LM
         void OnDropEvent(const std::string& filename);
     protected:
         DataBase* m_DataBase = nullptr;
+
+        GLFWwindow* m_Window;
 
         static inline std::string s_LoaderVersion;
         
@@ -205,6 +217,8 @@ namespace LM
         ElectricityAccuralCosts m_ElectricityAccuralCostsIntermediate;
 
         bool m_ShowDemoWindow = false;
+
+        TabsColumns m_TabsColumns;
     };
 
 }

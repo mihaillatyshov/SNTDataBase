@@ -1,0 +1,454 @@
+{
+    "Homesteads": [
+        {
+            "AddMembershipFees": true,
+            "Electricity": {
+                "Accurals": [
+                    {
+                        "Costs": {
+                            "Day": {
+                                "Amount": 657
+                            },
+                            "Night": {
+                                "Amount": 413
+                            },
+                            "Others": [
+                                {
+                                    "Money": {
+                                        "Amount": 6000
+                                    },
+                                    "Name": "Обслуживающая организация"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 2500
+                                    },
+                                    "Name": "Сервер"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 1500
+                                    },
+                                    "Name": "Освещение и шлагбаум"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 4050
+                                    },
+                                    "Name": "228кВт"
+                                }
+                            ]
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "Day": {
+                            "Watt": 0
+                        },
+                        "Night": {
+                            "Watt": 0
+                        }
+                    },
+                    {
+                        "Costs": {
+                            "Day": {
+                                "Amount": 657
+                            },
+                            "Night": {
+                                "Amount": 413
+                            },
+                            "Others": [
+                                {
+                                    "Money": {
+                                        "Amount": 6000
+                                    },
+                                    "Name": "Обслуживающая организация"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 2500
+                                    },
+                                    "Name": "Сервер"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 1500
+                                    },
+                                    "Name": "Освещение и шлагбаум"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 4050
+                                    },
+                                    "Name": "8кВт"
+                                }
+                            ]
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 2,
+                            "Year": 2019
+                        },
+                        "Day": {
+                            "Watt": 450000
+                        },
+                        "Night": {
+                            "Watt": 0
+                        }
+                    },
+                    {
+                        "Costs": {
+                            "Day": {
+                                "Amount": 657
+                            },
+                            "Night": {
+                                "Amount": 413
+                            },
+                            "Others": [
+                                {
+                                    "Money": {
+                                        "Amount": 6000
+                                    },
+                                    "Name": "Обслуживающая организация"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 2500
+                                    },
+                                    "Name": "Сервер"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 1500
+                                    },
+                                    "Name": "Освещение и шлагбаум"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 4050
+                                    },
+                                    "Name": "8кВт"
+                                }
+                            ]
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 2,
+                            "Year": 2019
+                        },
+                        "Day": {
+                            "Watt": 42000
+                        },
+                        "Night": {
+                            "Watt": 656000
+                        }
+                    }
+                ],
+                "All": {
+                    "Amount": -206606
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": [
+                    {
+                        "Amount": {
+                            "Amount": 542300
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "",
+                        "FormOfPayment": 0
+                    }
+                ]
+            },
+            "Forename": "y",
+            "HasBenefits": false,
+            "MembershipFee": {
+                "Debt": {
+                    "Amount": 0
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": [
+                    {
+                        "Amount": {
+                            "Amount": 0
+                        },
+                        "Date": {
+                            "Day": 5,
+                            "Month": 3,
+                            "Year": 2021
+                        },
+                        "DocumentNumber": "9",
+                        "FormOfPayment": 1
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 0
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2020
+                        },
+                        "DocumentNumber": "89",
+                        "FormOfPayment": 0
+                    }
+                ]
+            },
+            "Note": "ty 765 iyu iyu7 666 yu",
+            "Number": "1",
+            "Patronymic": "u",
+            "PhoneNumber": "87",
+            "Surname": "t"
+        },
+        {
+            "AddMembershipFees": true,
+            "Electricity": {
+                "Accurals": null,
+                "All": {
+                    "Amount": 0
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": null
+            },
+            "Forename": "gfdgdjgh",
+            "HasBenefits": false,
+            "MembershipFee": {
+                "Debt": {
+                    "Amount": -90100
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": [
+                    {
+                        "Amount": {
+                            "Amount": 0
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2020
+                        },
+                        "DocumentNumber": "5",
+                        "FormOfPayment": 0
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 76500
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 5,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "32",
+                        "FormOfPayment": 0
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 0
+                        },
+                        "Date": {
+                            "Day": 8,
+                            "Month": 3,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "66",
+                        "FormOfPayment": 0
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 3200
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "11",
+                        "FormOfPayment": 0
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 400
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "",
+                        "FormOfPayment": 0
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 10000
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "",
+                        "FormOfPayment": 0
+                    }
+                ]
+            },
+            "Note": "gfh",
+            "Number": "34",
+            "Patronymic": "jhgjgh",
+            "PhoneNumber": "544",
+            "Surname": "gdf"
+        }
+    ],
+    "MembershipFee": {
+        "Accural": [
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 6,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 7,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 8,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 9,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 10,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 11,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 12,
+                    "Year": 2020
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 2,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 3,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 4,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 5,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 6,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 7,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 8,
+                    "Year": 2021
+                },
+                "Money": 50000
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 9,
+                    "Year": 2021
+                },
+                "Money": 50000
+            }
+        ]
+    },
+    "OpeningBalance": {
+        "Date": {
+            "Day": 1,
+            "Month": 5,
+            "Year": 2020
+        }
+    }
+}

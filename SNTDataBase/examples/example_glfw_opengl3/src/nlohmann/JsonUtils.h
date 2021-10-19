@@ -9,6 +9,7 @@ namespace nlohmann
     {
         if (!Js.is_object())
             return;
+
         if (!Js[DataName.data()].empty())
             Value = Js[DataName.data()];
     }

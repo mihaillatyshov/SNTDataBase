@@ -49,31 +49,58 @@
     <ClCompile Include="..\imgui_impl_opengl2.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Accural.cpp">
+    <ClCompile Include="src\Data\Accural\Accural.cpp">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Application.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\DataBase.cpp">
+    <ClCompile Include="src\Data\DataBase\DataBase.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Electricity.cpp">
+    <ClCompile Include="src\Data\Electricity\Electricity.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Homestead.cpp">
+    <ClCompile Include="src\Data\Homestead\Homestead.cpp">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\MembershipFee.cpp">
+    <ClCompile Include="src\Data\MembershipFee\MembershipFee.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Payment.cpp">
+    <ClCompile Include="src\Data\Payment\Payment.cpp">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="src\LoaderUnloader\JsonLoaderUnloader.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Date\Date.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Money\Money.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Electricity\ElectricityAccural.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Electricity\ElectricityAccuralCosts.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Electricity\OtherElectricityAccuralCost.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Electricity\KiloWatt.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Windows\TabsColumns\TabsColumns.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Windows\TabsColumns\TabColumns.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Windows\TabsColumns\TabColumn.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -102,17 +129,24 @@
     <ClInclude Include="..\imgui_impl_opengl2.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="src\Accural.h" />
+    <ClInclude Include="src\Data\Accural\Accural.h" />
     <ClInclude Include="src\Core\Application.h" />
-    <ClInclude Include="src\DataBase.h" />
-    <ClInclude Include="src\Date.h" />
-    <ClInclude Include="src\Electricity.h" />
-    <ClInclude Include="src\Homestead.h" />
-    <ClInclude Include="src\MembershipFee.h" />
-    <ClInclude Include="src\OpeningBalance.h" />
-    <ClInclude Include="src\Payment.h" />
-    <ClInclude Include="src\Versions.h" />
+    <ClInclude Include="src\Data\DataBase\DataBase.h" />
+    <ClInclude Include="src\Data\Date\Date.h" />
+    <ClInclude Include="src\Data\Electricity\Electricity.h" />
+    <ClInclude Include="src\Data\Homestead\Homestead.h" />
+    <ClInclude Include="src\Data\MembershipFee\MembershipFee.h" />
+    <ClInclude Include="src\Data\MembershipFee\OpeningBalance.h" />
+    <ClInclude Include="src\Data\Payment\Payment.h" />
     <ClInclude Include="src\LoaderUnloader\JsonLoaderUnloader.h" />
+    <ClInclude Include="src\Data\Money\Money.h" />
+    <ClInclude Include="src\Data\Electricity\ElectricityAccural.h" />
+    <ClInclude Include="src\Data\Electricity\ElectricityAccuralCosts.h" />
+    <ClInclude Include="src\Data\Electricity\OtherElectricityAccuralCost.h" />
+    <ClInclude Include="src\Data\Electricity\KiloWatt.h" />
+    <ClInclude Include="src\Core\Windows\TabsColumns\TabsColumns.h" />
+    <ClInclude Include="src\Core\Windows\TabsColumns\TabColumns.h" />
+    <ClInclude Include="src\Core\Windows\TabsColumns\TabColumn.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.txt" />

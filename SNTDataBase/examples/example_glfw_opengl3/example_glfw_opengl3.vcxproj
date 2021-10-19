@@ -173,15 +173,24 @@
     <ClCompile Include="..\imgui_impl_opengl2.cpp" />
     <ClCompile Include="..\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\libs\gl3w\GL\gl3w.c" />
-    <ClCompile Include="src\Accural.cpp" />
+    <ClCompile Include="src\Core\Windows\TabsColumns\TabColumn.cpp" />
+    <ClCompile Include="src\Core\Windows\TabsColumns\TabColumns.cpp" />
+    <ClCompile Include="src\Core\Windows\TabsColumns\TabsColumns.cpp" />
+    <ClCompile Include="src\Data\Accural\Accural.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
-    <ClCompile Include="src\DataBase.cpp" />
-    <ClCompile Include="src\Electricity.cpp" />
-    <ClCompile Include="src\Homestead.cpp" />
+    <ClCompile Include="src\Data\DataBase\DataBase.cpp" />
+    <ClCompile Include="src\Data\Date\Date.cpp" />
+    <ClCompile Include="src\Data\Electricity\Electricity.cpp" />
+    <ClCompile Include="src\Data\Electricity\ElectricityAccural.cpp" />
+    <ClCompile Include="src\Data\Electricity\ElectricityAccuralCosts.cpp" />
+    <ClCompile Include="src\Data\Electricity\KiloWatt.cpp" />
+    <ClCompile Include="src\Data\Electricity\OtherElectricityAccuralCost.cpp" />
+    <ClCompile Include="src\Data\Homestead\Homestead.cpp" />
+    <ClCompile Include="src\Data\Money\Money.cpp" />
     <ClCompile Include="src\LoaderUnloader\JsonLoaderUnloader.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\MembershipFee.cpp" />
-    <ClCompile Include="src\Payment.cpp" />
+    <ClCompile Include="src\Data\MembershipFee\MembershipFee.cpp" />
+    <ClCompile Include="src\Data\Payment\Payment.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\imconfig.h" />
@@ -192,17 +201,24 @@
     <ClInclude Include="..\imgui_impl_opengl3.h" />
     <ClInclude Include="..\libs\gl3w\GL\gl3w.h" />
     <ClInclude Include="..\libs\gl3w\GL\glcorearb.h" />
-    <ClInclude Include="src\Accural.h" />
+    <ClInclude Include="src\Core\Windows\TabsColumns\TabColumn.h" />
+    <ClInclude Include="src\Core\Windows\TabsColumns\TabColumns.h" />
+    <ClInclude Include="src\Core\Windows\TabsColumns\TabsColumns.h" />
+    <ClInclude Include="src\Data\Accural\Accural.h" />
     <ClInclude Include="src\Core\Application.h" />
-    <ClInclude Include="src\DataBase.h" />
-    <ClInclude Include="src\Date.h" />
-    <ClInclude Include="src\Electricity.h" />
-    <ClInclude Include="src\Homestead.h" />
+    <ClInclude Include="src\Data\DataBase\DataBase.h" />
+    <ClInclude Include="src\Data\Date\Date.h" />
+    <ClInclude Include="src\Data\Electricity\Electricity.h" />
+    <ClInclude Include="src\Data\Electricity\ElectricityAccural.h" />
+    <ClInclude Include="src\Data\Electricity\ElectricityAccuralCosts.h" />
+    <ClInclude Include="src\Data\Electricity\KiloWatt.h" />
+    <ClInclude Include="src\Data\Electricity\OtherElectricityAccuralCost.h" />
+    <ClInclude Include="src\Data\Homestead\Homestead.h" />
+    <ClInclude Include="src\Data\Money\Money.h" />
     <ClInclude Include="src\LoaderUnloader\JsonLoaderUnloader.h" />
-    <ClInclude Include="src\MembershipFee.h" />
-    <ClInclude Include="src\OpeningBalance.h" />
-    <ClInclude Include="src\Payment.h" />
-    <ClInclude Include="src\Versions.h" />
+    <ClInclude Include="src\Data\MembershipFee\MembershipFee.h" />
+    <ClInclude Include="src\Data\MembershipFee\OpeningBalance.h" />
+    <ClInclude Include="src\Data\Payment\Payment.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\misc\natvis\imgui.natvis" />
