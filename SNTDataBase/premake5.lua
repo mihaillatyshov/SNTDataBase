@@ -1,4 +1,4 @@
-project "Sandbox"
+project "SNTDataBase"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"
@@ -12,34 +12,27 @@ project "Sandbox"
 		"src/**.h",
 		"src/**.hpp",
 		"src/**.cpp",
-		"src/**.c"
+		"src/**.c",
+		"../vendor/imgui/backends/imgui_impl_glfw.h",
+		"../vendor/imgui/backends/imgui_impl_glfw.cpp",
+		"../vendor/imgui/backends/imgui_impl_opengl2.h",
+		"../vendor/imgui/backends/imgui_impl_opengl2.cpp"
 	}
 
 	includedirs
 	{
 		"src",
-		"%{wks.location}/Vega/src",
-		"%{IncludeDir.glm}",
 		"%{IncludeDir.glfw}",
-		"%{IncludeDir.glew}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.assimp}"
-	}
-
-	libdirs 
-	{
-		"%{wks.location}/deps/assimp141/lib"
+		"%{IncludeDir.ImGui_backends}",
+		"%{IncludeDir.nlohmann}"
 	}
 
 	links
 	{
 		"glfw",
-		"glew",
 		"ImGui",
-		"opengl32.lib",
-		"assimp-vc141-mt",
-		"Vega"
+		"opengl32.lib"
 	}
 
 	filter "system:windows"

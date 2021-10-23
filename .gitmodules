@@ -1,0 +1,7 @@
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/mihaillatyshov/imgui.git
+	branch = docking
+[submodule "vendor/glfw"]
+	path = vendor/glfw
+	url = https://github.com/mihaillatyshov/glfw.git

@@ -1,6 +1,6 @@
 include "Dependencies.lua"
 
-workspace "SNTDataBase"
+workspace "SNTProject"
 	architecture "x86_64"
 	startproject "SNTDataBase"
 
@@ -18,8 +18,8 @@ workspace "SNTDataBase"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 group "Dependencies"
-	include "imgui"
+	include "vendor/glfw"
+	include "vendor/imgui"
 group ""
 
-include "imgui"
 include "SNTDataBase"
