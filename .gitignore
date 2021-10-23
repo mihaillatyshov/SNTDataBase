@@ -33,3 +33,10 @@
 
 # VS files
 *.vs
+*.sln
+*.vcxproj
+
+#
+bin
+bin-int
+SNTDataBase/backups
