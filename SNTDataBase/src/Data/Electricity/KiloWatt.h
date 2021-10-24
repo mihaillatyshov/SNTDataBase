@@ -13,6 +13,7 @@ namespace LM
             m_Watt = _KiloWatts * 1000 + _Watts;
         }
 
+        void Draw() const;
         bool DrawEdit(std::string_view _FieldName);
 
         nlohmann::basic_json<> GetJson() const;

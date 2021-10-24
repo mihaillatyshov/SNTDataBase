@@ -63,7 +63,7 @@ namespace LM
         nlohmann::SetValue(m_Amount, _JS, "Amount");
     }
 
-    bool Money::operator<(int _Val)
+    bool Money::operator<(int _Val) const
     {
         return m_Amount < _Val;
     }

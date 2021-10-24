@@ -4,9 +4,12 @@
 #include <array>
 #include <tuple>
 #include <unordered_map>
+
 #include <GLFW/glfw3.h>
+
 #include "Data/DataBase/DataBase.h"
 #include "Windows/TabsColumns/TabsColumns.h"
+#include "UI/Table/Table.h"
 
 
 namespace LM
@@ -28,8 +31,8 @@ namespace LM
                 if (Create)
                     return;
 
-                if (s_Application->SelectedHomestead != -1 && s_Application->SelectedHomestead < s_Application->m_DataBase->m_Homestead.size())
-                    SelectedHomestead = &s_Application->m_DataBase->m_Homestead[s_Application->SelectedHomestead];
+                if (s_Application->m_HomesteadsTable->GetSelectedId() != -1 && s_Application->m_HomesteadsTable->GetSelectedId() < s_Application->m_DataBase->m_Homesteads.size())
+                    SelectedHomestead = s_Application->m_DataBase->m_Homesteads[s_Application->m_HomesteadsTable->GetSelectedId()].get();
                 else
                     SelectedHomestead = nullptr;
 
@@ -52,8 +55,8 @@ namespace LM
                 if (Create)
                     return;
                 
-                if (s_Application->SelectedHomestead != -1 && s_Application->SelectedHomestead < s_Application->m_DataBase->m_Homestead.size())
-                    SelectedHomestead = &s_Application->m_DataBase->m_Homestead[s_Application->SelectedHomestead];
+                if (s_Application->m_HomesteadsTable->GetSelectedId() != -1 && s_Application->m_HomesteadsTable->GetSelectedId() < s_Application->m_DataBase->m_Homesteads.size())
+                    SelectedHomestead = s_Application->m_DataBase->m_Homesteads[s_Application->m_HomesteadsTable->GetSelectedId()].get();
                 else
                     SelectedHomestead = nullptr;
 
@@ -195,8 +198,7 @@ namespace LM
         
         CreateWindow<Homestead> CreateHomestead;
         EditWindow<Homestead> EditHomestead;
-        int SelectedHomestead = -1;
-        std::string_view SelectedHomesteadNumber = "<NONE>";
+        //int SelectedHomestead = -1;
 
         CreateWindow<Payment> CreateMembershipFeePayment;
         EditWindow<Payment> EditMembershipFeePayment;
@@ -220,6 +222,8 @@ namespace LM
         bool m_ShowDemoWindow = false;
 
         TabsColumns m_TabsColumns;
+
+        std::shared_ptr<Table> m_HomesteadsTable;
     };
 
 }

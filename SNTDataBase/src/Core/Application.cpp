@@ -31,7 +31,10 @@ namespace LM
         LoadFile();
 
         LoadColumns();
-
+        m_HomesteadsTable = std::make_shared<Table>(
+            std::vector<std::string>{ u8"Номер участка", u8"ФИО", u8"Членские взносы", u8"Электросеть" },
+            [=](size_t i) { return m_DataBase->GetHomestead(i); },
+            [=]() { return m_DataBase->GetHomesteadsSize(); });
     }
 
     
@@ -403,7 +406,7 @@ namespace LM
     {
         if (ImGui::BeginTabItem(u8"Участки"))
         {
-            ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteads().size());
+            ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsSize());
 
             if (ImGui::Button(u8"Добавить участок"))
             {
@@ -416,8 +419,8 @@ namespace LM
             {
                 if (!CreateHomestead.Create)
                 {
-                    if (SelectedHomestead != -1 && SelectedHomestead < m_DataBase->m_Homestead.size())
-                        EditHomestead.CreateNewIntermediate(&m_DataBase->m_Homestead[SelectedHomestead]);
+                    if (m_HomesteadsTable->GetSelectedId() != -1 && m_HomesteadsTable->GetSelectedId() < m_DataBase->m_Homesteads.size())
+                        EditHomestead.CreateNewIntermediate(m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()].get());
                 }
             }
             if (!EditHomestead.Create)
@@ -435,173 +438,8 @@ namespace LM
                 m_IsElectricityOpeningBalance = !m_IsElectricityOpeningBalance;
             }
 
+            m_HomesteadsTable->Draw();
 
-
-#if 0
-            ColumnsInfo &column = *ColumnsInfo::ColumnsMap["Homestead"];
-            ImGui::Columns(column.Names.size(), column.Name.c_str(), true); // 2-ways, with border
-            ImGui::Separator();
-            if (column.Update)
-            {
-                if (true)
-                {
-                    for (int i = 0; i < column.Names.size() - 1; i++)
-                    {
-                        ImGui::SetColumnWidth(i, column.Widths[i]);
-                        std::cout << column.Widths[i] << " ";
-                    }
-                    std::cout << column.Widths[column.Names.size() - 1] << "\n";
-                    column.Update = false;
-                }
-                else
-                {
-                    column.WidthLoaded = true;
-                }
-            }
-            column.DrawNames();
-
-
-            ImGui::Separator();
-            ImGui::Columns(1);
-            ImGui::BeginChild(column.Name.c_str(), ImVec2(0, 0), false);
-            ImGui::Columns(column.Names.size(), column.Name.c_str(), false);
-            for (int i = 0; i < column.Names.size() - 1; i++)
-            {
-                ImGui::SetColumnWidth(i, column.Widths[i]);
-            }
-
-            for (int i = 0; i < m_DataBase->GetHomesteads().size(); i++)
-            {
-                DrawRect(i, column);
-
-                ImGui::PushID(i);
-                //ImGui::PushStyleColor(ImGuiCol_Text, i % 2 ? 0xff686868 : 0xff191919);
-                //ImGui::PushStyleColor(ImGuiCol_WindowBg, i % 2 ? 0xff686868 : 0xff191919);
-
-                Homestead& homestead = m_DataBase->GetHomesteads()[i];
-
-                bool ThisSelected = i == SelectedHomestead;
-
-                ////////////////////////////////////////////////////////////////////////
-                //////// 1 /////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////
-
-                if (ImGui::Selectable(homestead.GetNumber().data(), ThisSelected, ImGuiSelectableFlags_SpanAllColumns))
-                {
-                    if (ThisSelected)
-                    {
-                        SelectedHomestead = -1;
-                    }
-                    else
-                    {
-                        SelectedHomestead = i;
-                    }
-                }
-                ImGui::NextColumn();
-
-               
-                ////////////////////////////////////////////////////////////////////////
-                //////// 2 /////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////
-                ImGui::Text("%s %s %s", homestead.GetSurname().data(), homestead.GetForename().data(), homestead.GetPatronymic().data());
-                ImGui::NextColumn();
-
-
-                ////////////////////////////////////////////////////////////////////////
-                //////// 3 /////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////
-                //ImGui::Text("%lld.%02lld", homestead.m_MembershipFee.m_Debt.m_Amount / 100, abs(homestead.m_MembershipFee.m_Debt.m_Amount % 100));
-                homestead.m_MembershipFee.m_Debt.Draw();
-                ImGui::NextColumn();
-
-
-                ////////////////////////////////////////////////////////////////////////
-                //////// 4 /////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////
-                homestead.m_Electricity.m_All.Draw();
-                ImGui::NextColumn();
-
-
-
-                //ImGui::PopStyleColor();
-                ImGui::PopID();
-            }
-            ImGui::Columns(1);
-            ImGui::EndChild();
-
-#endif
-
-
-            ImGuiTableFlags Flags =
-                ImGuiTableFlags_Resizable
-                | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
-                | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
-                | ImGuiTableFlags_ScrollY
-                | ImGuiTableFlags_SizingFixedFit;
-
-            ImVec2 RegionAvail = ImGui::GetContentRegionAvail();
-            if (ImGui::BeginTable("table_advanced", 4, Flags, ImVec2(0.0f, RegionAvail.y - 50)))
-            {
-                ImGui::TableSetupScrollFreeze(0, 1);
-                ImGui::TableSetupColumn(u8"Номер участка",   0, 0.0f, 0);
-                ImGui::TableSetupColumn(u8"ФИО",             0, 0.0f, 1);
-                ImGui::TableSetupColumn(u8"Членские взносы", 0, 0.0f, 2);
-                ImGui::TableSetupColumn(u8"Электросеть",     ImGuiTableColumnFlags_WidthStretch, 0.0f, 3);
-                ImGui::TableHeadersRow();
-
-                ImGuiListClipper clipper;
-                clipper.Begin(m_DataBase->GetHomesteads().size());
-                while (clipper.Step())
-                {
-                    for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-                    {
-                        ImGui::PushID(i);
-                        ImGui::TableNextRow();
-
-                        Homestead& NowHomestead = m_DataBase->m_Homestead[i];
-                        if (ImGui::TableSetColumnIndex(0))
-                        {
-                            ImGui::TextUnformatted(NowHomestead.GetNumber().data());
-                            ImGui::SameLine();
-                            const ImGuiSelectableFlags SelectableFlags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
-                            const bool IsHomesteadSelected = SelectedHomesteadNumber == NowHomestead.GetNumber();
-                            if (ImGui::Selectable("", IsHomesteadSelected, SelectableFlags))
-                            {
-                                if (IsHomesteadSelected)
-                                {
-                                    SelectedHomesteadNumber = "<NONE>";
-                                    SelectedHomestead = -1;
-                                }
-                                else
-                                {
-                                    SelectedHomesteadNumber = NowHomestead.GetNumber();
-                                    SelectedHomestead = i;
-                                }
-                            }
-                        }
-
-                        if (ImGui::TableSetColumnIndex(1))
-                        {
-                            ImGui::Text(u8"%s %s %s", NowHomestead.GetSurname().data(),
-                                                      NowHomestead.GetForename().data(),
-                                                      NowHomestead.GetPatronymic().data());
-                        }
-
-                        if (ImGui::TableSetColumnIndex(2))
-                        {
-                            NowHomestead.GetMembershipFee().GetDebt().Draw();
-                        }
-
-                        if (ImGui::TableSetColumnIndex(3))
-                        {
-                            NowHomestead.GetElectricity().GetAll().Draw();
-                        }
-
-                        ImGui::PopID();
-                    }
-                }
-                ImGui::EndTable();
-            }
 
             ImGui::EndTabItem();
         }
@@ -754,8 +592,6 @@ namespace LM
             //    EditWin->Dirty = false;
             //}
 
-
-
             ImGuiViewport* viewport = ImGui::GetMainViewport();
             ImVec2 window_size = ImVec2(400, 150);
             ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
@@ -796,15 +632,14 @@ namespace LM
     void Application::DrawDeleteHomestead()
     {
         std::string Name = u8"участок";
-        auto &dataArray = m_DataBase->m_Homestead;
-        int& selected = SelectedHomestead;
+        auto &dataArray = m_DataBase->m_Homesteads;
 
         if (m_IsEdit)
         {
             ImGui::SameLine();
             if (ImGui::Button(std::string(u8"Удалить " + Name).c_str()))
             {
-                if (selected != -1 && selected < dataArray.size())
+                if (m_HomesteadsTable->GetSelectedId() != -1 && m_HomesteadsTable->GetSelectedId() < dataArray.size())
                 {
                     ImGui::OpenPopup(std::string(u8"Удалить?##" + Name).c_str());
 
@@ -820,7 +655,7 @@ namespace LM
             if (ImGui::Button(u8"Удалить", ImVec2(120, 0)))
             {
                 CreateBackup();
-                dataArray.erase(dataArray.begin() + selected);
+                dataArray.erase(dataArray.begin() + m_HomesteadsTable->GetSelectedId());
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
@@ -837,12 +672,12 @@ namespace LM
 
     void Application::DrawMembershipFee()
     {
-        if (SelectedHomestead == -1)
+        if (m_HomesteadsTable->GetSelectedId() == -1)
             return;
 
         if (ImGui::BeginTabItem(u8"Членские взносы"))
         {
-            if (SelectedHomestead == -1 || SelectedHomestead >= m_DataBase->m_Homestead.size())
+            if (m_HomesteadsTable->GetSelectedId() == -1 || m_HomesteadsTable->GetSelectedId() >= m_DataBase->m_Homesteads.size())
             {
                 ImGui::Text(u8"Участок не выбран!");
                 ImGui::EndTabItem();
@@ -857,7 +692,7 @@ namespace LM
             t_m = localtime(&t);
             //std::string date = std::to_string(1900 + t_m->tm_year) + "-" + std::to_string(1 + t_m->tm_mon) + "-" + std::to_string(t_m->tm_mday);
 
-            Money& Amount = m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Debt;
+            const Money Amount = m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().GetDebt();//m_MembershipFee.m_Debt;
             if (Amount < 0)
             {
                 ImGui::Text(u8"Переплата на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
@@ -879,8 +714,8 @@ namespace LM
             {
                 if (!CreateMembershipFeePayment.Create)
                 {
-                    if (SelectedMembershipFee != -1 && SelectedMembershipFee < m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Payments.size())
-                        EditMembershipFeePayment.CreateNewIntermediate(&m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Payments[SelectedMembershipFee]/*, &m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee*/);
+                    if (SelectedMembershipFee != -1 && SelectedMembershipFee < m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().m_Payments.size())
+                        EditMembershipFeePayment.CreateNewIntermediate(&m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments[SelectedMembershipFee]);
                 }
             } ImGui::SameLine();
             if (ImGui::Button(u8"Проверка начислений"))
@@ -927,11 +762,11 @@ namespace LM
                 ImGui::SetColumnWidth(i, column.Widths[i]);
             }
 
-            for (int i = 0; i < m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Payments.size(); i++)
+            for (int i = 0; i < m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().m_Payments.size(); i++)
             {
                 DrawRect(i, column);
                 
-                Payment& payment = m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Payments[i];
+                Payment payment = m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().m_Payments[i];
                 bool ThisSelected = i == SelectedMembershipFee;
 
                 ImGui::PushID(i);
@@ -1132,7 +967,7 @@ namespace LM
     void Application::DrawDeleteMembershipFeePayment()
     {
         std::string Name = u8"платеж##Членские взносы";
-        auto &dataArray = m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Payments;
+        auto &dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments;
         int& selected = SelectedMembershipFee;
 
         if (m_IsEdit)
@@ -1156,7 +991,7 @@ namespace LM
             if (ImGui::Button(u8"Удалить", ImVec2(120, 0)))
             {
                 CreateBackup();
-                m_DataBase->m_Homestead[SelectedHomestead].m_MembershipFee.m_Debt += dataArray[selected].m_Amount;
+                m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Debt += dataArray[selected].m_Amount;
                 dataArray.erase(dataArray.begin() + selected);
                 ImGui::CloseCurrentPopup();
             }
@@ -1175,7 +1010,7 @@ namespace LM
     {
         if ((m_IsEdit && m_IsMembershipFeeOpeningBalance) && ImGui::BeginTabItem(u8"Начальное сальдо: членские взносы"))
         {
-            ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteads().size());
+            ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsSize());
 
             Date &date = OpeningBalance::s_Date;
 
@@ -1214,27 +1049,27 @@ namespace LM
             }
 
 
-            for (int i = 0; i < m_DataBase->GetHomesteads().size(); i++)
+            for (int i = 0; i < m_DataBase->GetHomesteadsSize(); i++)
             {
                 DrawRectBig(i, column);
                             
 
                 ImGui::PushID(i);
 
-                Homestead& homestead = m_DataBase->GetHomesteads()[i];
+                auto& homestead = m_DataBase->m_Homesteads[i];
 
-                ImGui::Text(homestead.GetNumber().data());
+                ImGui::Text(homestead->GetNumber().data());
                 ImGui::NextColumn();
 
-                ImGui::Text("%s %s %s", homestead.GetSurname().data(), homestead.GetForename().data(), homestead.GetPatronymic().data());
+                ImGui::Text("%s %s %s", homestead->GetSurname().data(), homestead->GetForename().data(), homestead->GetPatronymic().data());
                 ImGui::NextColumn();
 
-                homestead.m_MembershipFee.m_OpeningBalance.s_Date.Draw();
+                homestead->m_MembershipFee.m_OpeningBalance.s_Date.Draw();
                 ImGui::NextColumn();
 
-                homestead.m_MembershipFee.m_Debt -= homestead.m_MembershipFee.m_OpeningBalance.m_Money;
-                homestead.m_MembershipFee.m_OpeningBalance.m_Money.DrawEdit(u8"Сумма");
-                homestead.m_MembershipFee.m_Debt += homestead.m_MembershipFee.m_OpeningBalance.m_Money;
+                homestead->m_MembershipFee.m_Debt -= homestead->m_MembershipFee.m_OpeningBalance.m_Money;
+                homestead->m_MembershipFee.m_OpeningBalance.m_Money.DrawEdit(u8"Сумма");
+                homestead->m_MembershipFee.m_Debt += homestead->m_MembershipFee.m_OpeningBalance.m_Money;
 
                 ImGui::NextColumn();
 
@@ -1364,11 +1199,11 @@ namespace LM
                 if (ImGui::Button(u8"Добавить"))
                 {
                     MembershipFee::s_Accural.push_back(accural);
-                    for (auto &homestead : m_DataBase->m_Homestead)
+                    for (auto &homestead : m_DataBase->m_Homesteads)
                     {
-                        if (homestead.m_AddMembershipFees)
+                        if (homestead->GetAddMembershipFees())
                         {
-                            homestead.m_MembershipFee.m_Debt += accural.m_Money;
+                            homestead->m_MembershipFee.m_Debt += accural.m_Money;
                         }
                     }
                     accurals.erase(accurals.begin() + i);
@@ -1390,11 +1225,11 @@ namespace LM
                 ImGui::SameLine();
                 if (ImGui::Button(u8"Удалить"))
                 {
-                    for (auto &homestead : m_DataBase->m_Homestead)
+                    for (auto &homestead : m_DataBase->m_Homesteads)
                     {
-                        if (homestead.m_AddMembershipFees)
+                        if (homestead->GetAddMembershipFees())
                         {
-                            homestead.m_MembershipFee.m_Debt -= accural.m_Money;
+                            homestead->m_MembershipFee.m_Debt -= accural.m_Money;
                         }
                     }
                     MembershipFee::s_Accural.erase(MembershipFee::s_Accural.begin() + AccuralsToDelete[i]);
@@ -1438,12 +1273,12 @@ namespace LM
 
     void Application::DrawElectricity()
     {
-        if (SelectedHomestead == -1)
+        if (m_HomesteadsTable->GetSelectedId() == -1)
             return;
 
         if (ImGui::BeginTabItem(u8"Начисление электроэнергии"))
         {
-            if (SelectedHomestead == -1 || SelectedHomestead >= m_DataBase->m_Homestead.size())
+            if (m_HomesteadsTable->GetSelectedId() == -1 || m_HomesteadsTable->GetSelectedId() >= m_DataBase->m_Homesteads.size())
             {
                 ImGui::Text(u8"Участок не выбран!");
                 ImGui::EndTabItem();
@@ -1452,7 +1287,7 @@ namespace LM
 
             ColumnsInfo &column = *ColumnsInfo::ColumnsMap["Electricity"];
 
-            Homestead& homestead = m_DataBase->GetHomesteads()[SelectedHomestead];
+            auto& homestead = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
             
 
             if (ImGui::Button(u8"Добавить начисление"))
@@ -1466,8 +1301,8 @@ namespace LM
             {
                 if (!CreateElectricityAccural.Create)
                 {
-                    if (SelectedElectricityAccural != -1 && SelectedElectricityAccural < homestead.m_Electricity.m_Accurals.size())
-                        EditElectricityAccural.CreateNewIntermediate(&homestead.m_Electricity.m_Accurals[SelectedElectricityAccural]);
+                    if (SelectedElectricityAccural != -1 && SelectedElectricityAccural < homestead->m_Electricity.m_Accurals.size())
+                        EditElectricityAccural.CreateNewIntermediate(&homestead->m_Electricity.m_Accurals[SelectedElectricityAccural]);
                 }
             }
             if (!EditElectricityAccural.Create)
@@ -1509,24 +1344,19 @@ namespace LM
             }
 
 
-            for (int i = 0; i < homestead.m_Electricity.m_Accurals.size(); i++)
+            for (int i = 0; i < homestead->m_Electricity.m_Accurals.size(); i++)
             {
                 DrawRect(i, column);
                 
                 ImGui::PushID(i);
-                //ImGui::PushStyleColor(ImGuiCol_Text, i % 2 ? 0xff686868 : 0xff191919);
-                //ImGui::PushStyleColor(ImGuiCol_WindowBg, i % 2 ? 0xff686868 : 0xff191919);
 
-                ElectricityAccural& electricityAccural = homestead.m_Electricity.m_Accurals[i];
+                ElectricityAccural electricityAccural = homestead->m_Electricity.m_Accurals[i];
 
                 bool ThisSelected = i == SelectedElectricityAccural;
 
                 ////////////////////////////////////////////////////////////////////////
                 //////// 1 /////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////
-
-                //char date[20]{0};
-                //sprintf(date, u8"%02d.%02d.%d", electricityAccural.m_Date.Day, electricityAccural.m_Date.Month, electricityAccural.m_Date.Year);
                 if (ImGui::Selectable(electricityAccural.m_Date.GetString().data(), ThisSelected, ImGuiSelectableFlags_SpanAllColumns))
                 {
                     if (ThisSelected)
@@ -1538,28 +1368,24 @@ namespace LM
                         SelectedElectricityAccural = i;
                     }
                 }
-                //ImGui::Text(u8"%02d.%02d.%d", electricityAccural.m_Date.Day, electricityAccural.m_Date.Month, electricityAccural.m_Date.Year);
                 ImGui::NextColumn();
-
                
                 ////////////////////////////////////////////////////////////////////////
                 //////// 2 /////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////
-                ImGui::Text("%lld.%03lld", electricityAccural.m_Day.m_Watt / 1000, electricityAccural.m_Day.m_Watt % 1000);
+                electricityAccural.m_Day.Draw();
                 ImGui::NextColumn();
-
 
                 ////////////////////////////////////////////////////////////////////////
                 //////// 3 /////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////
-                ImGui::Text("%lld.%03lld", electricityAccural.m_Night.m_Watt / 1000, electricityAccural.m_Night.m_Watt % 1000);
+                electricityAccural.m_Night.Draw();
                 ImGui::NextColumn();
-
 
                 ////////////////////////////////////////////////////////////////////////
                 //////// 4 /////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////
-                ImGui::Text("%lld.%03lld", electricityAccural.GetAllMonth().m_Watt / 1000, electricityAccural.GetAllMonth().m_Watt % 1000);
+                electricityAccural.GetAllMonth().Draw();
                 ImGui::NextColumn();
 
                 
@@ -1832,7 +1658,7 @@ namespace LM
     void Application::DrawDeleteElectricity()
     {
         std::string Name = u8"начисление##Начисление электроэнергии";
-        auto &dataArray = m_DataBase->m_Homestead[SelectedHomestead].m_Electricity.m_Accurals;
+        auto &dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.m_Accurals;
         int& selected = SelectedElectricityAccural;
 
         if (m_IsEdit)
@@ -1857,7 +1683,7 @@ namespace LM
             {
                 CreateBackup();
                 dataArray.erase(dataArray.begin() + selected);
-                m_DataBase->m_Homestead[SelectedHomestead].m_Electricity.Recalculate(m_DataBase->m_Homestead[SelectedHomestead].m_HasBenefits);
+                m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.Recalculate(m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_HasBenefits);
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
@@ -1873,9 +1699,9 @@ namespace LM
 
     void Application::RecalculateElectricityAccurals()
     {
-        for (auto& homestead : m_DataBase->m_Homestead)
+        for (auto& homestead : m_DataBase->m_Homesteads)
         {
-            homestead.m_Electricity.Recalculate(homestead.m_HasBenefits);
+            homestead->m_Electricity.Recalculate(homestead->m_HasBenefits);
         }
     }
 
@@ -1892,15 +1718,15 @@ namespace LM
                 
                 if (ImGui::Button(u8"Сохранить в базе"))
                 {
-                    for (auto& homestead : m_DataBase->m_Homestead)
+                    for (auto& homestead : m_DataBase->m_Homesteads)
                     {
                         for (auto& accuralInfo : m_DropInfoAccurals)
                         {
                             auto& [name, accural] = accuralInfo;
-                            if (homestead.m_Number == name)
+                            if (homestead->m_Number == name)
                             {
                                 accural.m_Costs = m_ElectricityAccuralCostsIntermediate;
-                                homestead.m_Electricity.m_Accurals.push_back(accural);
+                                homestead->m_Electricity.m_Accurals.push_back(accural);
                                 break;
                             }
                         }
@@ -2021,12 +1847,12 @@ namespace LM
 
     void Application::DrawElectricityPayment()
     {
-        if (SelectedHomestead == -1)
+        if (m_HomesteadsTable->GetSelectedId() == -1)
             return;
 
         if (ImGui::BeginTabItem(u8"Оплата электроэнергии"))
         {
-            if (SelectedHomestead == -1 || SelectedHomestead >= m_DataBase->m_Homestead.size())
+            if (m_HomesteadsTable->GetSelectedId() == -1 || m_HomesteadsTable->GetSelectedId() >= m_DataBase->m_Homesteads.size())
             {
                 ImGui::Text(u8"Участок не выбран!");
                 ImGui::EndTabItem();
@@ -2034,7 +1860,7 @@ namespace LM
             }
             ColumnsInfo &column = *ColumnsInfo::ColumnsMap["ElectricityPayment"];
 
-            Homestead& homestead = m_DataBase->GetHomesteads()[SelectedHomestead];
+            Homestead& homestead = *m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
             
             time_t t;
             struct tm *t_m;
@@ -2316,7 +2142,7 @@ namespace LM
     void Application::DrawDeleteElectricityPayment()
     {
         std::string Name = u8"платеж##Электроэнергия";
-        auto &dataArray = m_DataBase->m_Homestead[SelectedHomestead].m_Electricity.m_Payments;
+        auto &dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.m_Payments;
         int& selected = SelectedElectricityPayment;
 
         if (m_IsEdit)
@@ -2340,7 +2166,7 @@ namespace LM
             if (ImGui::Button(u8"Удалить", ImVec2(120, 0)))
             {
                 CreateBackup();
-                m_DataBase->m_Homestead[SelectedHomestead].m_Electricity.m_All += dataArray[selected].m_Amount;
+                m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.m_All += dataArray[selected].m_Amount;
                 dataArray.erase(dataArray.begin() + selected);
                 ImGui::CloseCurrentPopup();
             }
@@ -2419,15 +2245,15 @@ namespace LM
             return;
 	    }
 		std::cout << "File ok! Saving file..." << std::endl;
-        for (auto& homestead : m_DataBase->GetHomesteads())
+        for (auto& homestead : m_DataBase->m_Homesteads)
         {
-            if (homestead.m_Electricity.m_Accurals.size() < 2)
+            if (homestead->m_Electricity.m_Accurals.size() < 2)
                 continue;
 
-            std::vector<ElectricityAccural>& accurals = homestead.m_Electricity.m_Accurals;
+            std::vector<ElectricityAccural>& accurals = homestead->m_Electricity.m_Accurals;
             ElectricityAccural& accuralBack = accurals.back();
             ElectricityAccural& accuralPrev = accurals[accurals.size() - 2];
-            fout << homestead.m_Number << SepCSV;
+            fout << homestead->m_Number << SepCSV;
             fout << accuralBack.GetAllMonth() << SepCSV;
             fout << accuralBack.m_Day << SepCSV;
             fout << accuralBack.m_Night << SepCSV;
@@ -2463,7 +2289,7 @@ namespace LM
                 fullSum += money;
             }
 
-            Money sumToDate = homestead.m_Electricity.CalcAccuralsToDate(accuralPrev.m_Date, homestead.m_HasBenefits);
+            Money sumToDate = homestead->m_Electricity.CalcAccuralsToDate(accuralPrev.m_Date, homestead->m_HasBenefits);
             fullSum += sumToDate;
 
             fout << sumToDate << SepCSV;
@@ -2471,7 +2297,7 @@ namespace LM
 
             bool Payed = false;
             Payment LastPay;
-            for (auto& payment : homestead.m_Electricity.m_Payments)
+            for (auto& payment : homestead->m_Electricity.m_Payments)
             {
                 if (payment.m_Date > accuralPrev.m_Date && payment.m_Date <= accuralBack.m_Date)
                 {
@@ -2493,7 +2319,7 @@ namespace LM
 
             fout << fullSum - LastPay.m_Amount << std::endl;
 
-            std::cout << homestead.m_Electricity.CalcAccuralsToDate(accuralBack.m_Date, homestead.m_HasBenefits) << std::endl;
+            std::cout << homestead->m_Electricity.CalcAccuralsToDate(accuralBack.m_Date, homestead->m_HasBenefits) << std::endl;
 
         }
 
@@ -2531,17 +2357,17 @@ namespace LM
 		std::cout << "File ok! Saving file..." << std::endl;
 
 
-        for (auto& homestead : m_DataBase->m_Homestead)
+        for (auto& homestead : m_DataBase->m_Homesteads)
         {
-            fout << homestead.m_Number << ";";
-            Money EndSum = homestead.m_MembershipFee.m_OpeningBalance.m_Money;
-            for (auto& accural : homestead.m_MembershipFee.s_Accural)
+            fout << homestead->m_Number << ";";
+            Money EndSum = homestead->m_MembershipFee.m_OpeningBalance.m_Money;
+            for (auto& accural : homestead->m_MembershipFee.s_Accural)
             {
                 if (accural.m_Date > date)
                     break;
                 EndSum += accural.m_Money;
             }
-            for (auto& accural : homestead.m_MembershipFee.m_Payments)
+            for (auto& accural : homestead->m_MembershipFee.m_Payments)
             {
                 if (accural.m_Date > date)
                     break;
@@ -2560,7 +2386,7 @@ namespace LM
 
         if ((m_IsEdit && m_IsElectricityOpeningBalance) && ImGui::BeginTabItem(u8"Начальное сальдо: электроэнергия"))
         {
-            ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteads().size());
+            ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsSize());
 
             ColumnsInfo &column = *ColumnsInfo::ColumnsMap["ElectricityOpeningBalance"];
 
@@ -2597,14 +2423,14 @@ namespace LM
             }
 
 
-            for (int i = 0; i < m_DataBase->GetHomesteads().size(); i++)
+            for (int i = 0; i < m_DataBase->GetHomesteadsSize(); i++)
             {
                 DrawRectBig(i, column);
             
 
                 ImGui::PushID(i);
 
-                Homestead& homestead = m_DataBase->GetHomesteads()[i];
+                Homestead& homestead = *m_DataBase->m_Homesteads[i];
 
                 ImGui::Text(homestead.GetNumber().data());
                 ImGui::NextColumn();

@@ -12,9 +12,12 @@ namespace LM
     public:
         void Push(const Homestead& homestead);
 
-        std::vector<Homestead>& GetHomesteads() { return m_Homestead; }
+        const std::shared_ptr<const Homestead> GetHomestead(size_t _Id) const { return m_Homesteads[_Id]; }
+        size_t GetHomesteadsSize() const { return m_Homesteads.size(); }
 
-        std::vector<Homestead> m_Homestead;
+        //std::vector<Homestead>& GetHomesteads() { return m_Homesteads; }
+
+        std::vector<std::shared_ptr<Homestead>> m_Homesteads;
     };
 
 }

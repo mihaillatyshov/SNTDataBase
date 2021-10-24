@@ -21,10 +21,11 @@ namespace LM
         if (!js.is_object())
             return;
 
-        m_DataBase->m_Homestead.resize(js["Homesteads"].size());
+        m_DataBase->m_Homesteads.resize(js["Homesteads"].size());
         for (int i = 0; i < js["Homesteads"].size(); i++)
         {
-            m_DataBase->m_Homestead[i].SetJson(js["Homesteads"][i]);
+            m_DataBase->m_Homesteads[i] = std::make_shared<Homestead>();
+            m_DataBase->m_Homesteads[i]->SetJson(js["Homesteads"][i]);
         }
 
         if (js["OpeningBalance"].is_object())
@@ -44,9 +45,9 @@ namespace LM
     {
 
         nlohmann::json js;
-        for (int i = 0; i < m_DataBase->m_Homestead.size(); i++)
+        for (int i = 0; i < m_DataBase->m_Homesteads.size(); i++)
         {
-            js["Homesteads"][i] = m_DataBase->m_Homestead[i].GetJson();
+            js["Homesteads"][i] = m_DataBase->m_Homesteads[i]->GetJson();
         }
 
         js["OpeningBalance"]["Date"] = OpeningBalance::s_Date.GetJson();

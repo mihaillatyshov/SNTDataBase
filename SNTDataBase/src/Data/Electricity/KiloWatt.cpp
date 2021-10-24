@@ -6,6 +6,10 @@
 
 namespace LM
 {
+    void KiloWatt::Draw() const
+    {
+        ImGui::Text("%lld.%03lld", m_Watt / 1000, m_Watt % 1000);
+    }
 
     bool KiloWatt::DrawEdit(std::string_view _FieldName)
     {

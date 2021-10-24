@@ -20,7 +20,7 @@ namespace LM
         nlohmann::basic_json<> GetJson() const;
         void SetJson(nlohmann::basic_json<> _JS);
     public:
-        bool operator<(int _Val);
+        bool operator<(int _Val) const;
         const Money operator+(const Money& _Other) const;
         const Money operator-(const Money& _Other) const;
         Money& operator+=(const Money& _Other);

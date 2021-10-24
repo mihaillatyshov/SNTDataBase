@@ -1,16 +1,17 @@
 #pragma once
 
 #include <string>
+#include <nlohmann/json.hpp>
 
 #include "../MembershipFee/MembershipFee.h"
 #include "../Accural/Accural.h"
 #include "../Electricity/Electricity.h"
-#include <nlohmann/json.hpp>
+#include "UI/Table/TableElement.h"
 
 namespace LM
 {
 
-    class Homestead
+    class Homestead : public TableElement
     {
     public:
         inline void SetNumber(std::string_view number)              { m_Number = number; }
@@ -20,14 +21,16 @@ namespace LM
         inline void SetPhoneNumber(std::string_view phoneNumber)    { m_PhoneNumber = phoneNumber; }
         inline void SetNote(std::string_view note)                  { m_Note = note; }
 
-        inline std::string_view     GetNumber()         const { return m_Number; }
-        inline std::string_view     GetSurname()        const { return m_Surname; }
-        inline std::string_view     GetForename()       const { return m_Forename; }
-        inline std::string_view     GetPatronymic()     const { return m_Patronymic; }
-        inline std::string_view     GetPhoneNumber()    const { return m_PhoneNumber; }
-        inline std::string_view     GetNote()           const { return m_Note; }
-        inline const MembershipFee& GetMembershipFee()  const { return m_MembershipFee; }
-        inline const Electricity&   GetElectricity()    const { return m_Electricity; }
+        inline std::string_view     GetNumber()             const { return m_Number; }
+        inline std::string_view     GetSurname()            const { return m_Surname; }
+        inline std::string_view     GetForename()           const { return m_Forename; }
+        inline std::string_view     GetPatronymic()         const { return m_Patronymic; }
+        inline std::string_view     GetPhoneNumber()        const { return m_PhoneNumber; }
+        inline std::string_view     GetNote()               const { return m_Note; }
+        inline bool                 GetHasBenefits()        const { return m_HasBenefits; }
+        inline bool                 GetAddMembershipFees()  const { return m_AddMembershipFees; }
+        inline const MembershipFee& GetMembershipFee()      const { return m_MembershipFee; }
+        inline const Electricity&   GetElectricity()        const { return m_Electricity; }
 
         inline std::string& GetNumberRef()          { return m_Number; }
         inline std::string& GetSurnameRef()         { return m_Surname; }
@@ -36,6 +39,8 @@ namespace LM
         inline std::string& GetPhoneNumberRef()     { return m_PhoneNumber; }
         inline std::string& GetNoteRef()            { return m_Note; }
         inline MembershipFee& GetMembershipFeeRef() { return m_MembershipFee; }
+
+        virtual std::vector<std::function<void(void)>> GetDrawableColumns() const override;
 
         nlohmann::basic_json<> GetJson() const;
         void SetJson(nlohmann::basic_json<> js);

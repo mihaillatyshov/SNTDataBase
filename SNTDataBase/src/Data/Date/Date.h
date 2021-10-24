@@ -12,7 +12,7 @@ namespace LM
     public:
         Date() = default;
 
-        void Draw();
+        void Draw() const;
         bool DrawEdit();
 
         int GetDaysInMonth(int _Month, int _Year) const;

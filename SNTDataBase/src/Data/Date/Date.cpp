@@ -6,7 +6,7 @@
 namespace LM
 {
 
-    void Date::Draw()
+    void Date::Draw() const
     {
         ImGui::Text("%02d.%02d.%d", m_Day, m_Month, m_Year);
     }

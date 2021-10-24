@@ -34,9 +34,11 @@
 # VS files
 *.vs
 *.sln
-*.vcxproj
+*.vcxproj*
 
 #
 bin
 bin-int
 SNTDataBase/backups
+imgui.ini
+JsDB.json
