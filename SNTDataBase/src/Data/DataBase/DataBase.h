@@ -13,7 +13,7 @@ namespace LM
 		void Push(const Homestead& homestead);
 
 		const std::shared_ptr<const Homestead> GetHomestead(size_t _Id) const { return m_Homesteads[_Id]; }
-		size_t GetHomesteadsSize() const { return m_Homesteads.size(); }
+		size_t GetHomesteadsCount() const { return m_Homesteads.size(); }
 
 		//std::vector<Homestead>& GetHomesteads() { return m_Homesteads; }
 

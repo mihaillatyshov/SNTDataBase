@@ -18,8 +18,31 @@ namespace LM
 		ImGui::PushItemWidth(250);
 		if (ImGui::InputText(u8"Номер платежа", NameBuf, bufSize))
 			m_DocumentNumber = NameBuf;
-		delete NameBuf;
+		delete[] NameBuf;
 		ImGui::PopItemWidth();
+	}
+
+	std::vector<std::function<void(void)>> Payment::GetDrawableColumns() const
+	{
+		return
+		{
+			[=]()
+			{
+				m_Date.Draw();
+			},
+			[=]()
+			{
+				m_Amount.Draw();
+			},
+			[=]()
+			{
+				ImGui::TextUnformatted(GetFormOfPayment().data());
+			},
+			[=]()
+			{
+				ImGui::TextUnformatted(m_DocumentNumber.c_str());
+			}
+		};
 	}
 
 	nlohmann::basic_json<> Payment::GetJson() const

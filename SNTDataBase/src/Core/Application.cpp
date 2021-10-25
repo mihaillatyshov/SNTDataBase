@@ -30,14 +30,19 @@ namespace LM
 		LoadFile();
 
 		LoadColumns();
-		m_HomesteadsTable = std::make_shared<Table>
-			(
-				std::vector<std::string>{ u8"Номер участка", u8"ФИО", u8"Членские взносы", u8"Электросеть" },
-				[=](size_t i) { return m_DataBase->GetHomestead(i); },
-				[=]() { return m_DataBase->GetHomesteadsSize(); }
+		m_HomesteadsTable = std::make_shared<Table> 
+		(
+			std::vector<std::string>{ u8"Номер участка", u8"ФИО", u8"Членские взносы", u8"Электросеть" },
+			[=](size_t _Id) { return m_DataBase->GetHomestead(_Id); },
+			[=]()			{ return m_DataBase->GetHomesteadsCount(); }
 		);
 
-		m_MembershipFeePaymentsTable = std::
+		m_MembershipFeePaymentsTable = std::make_shared<Table>
+		(
+			std::vector<std::string>{ u8"Дата", u8"Сумма", u8"Форма Платежа", u8"Номер документа" },
+			[=](size_t _Id) { return m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().GetPayment(_Id); },
+			[=]()			{ return m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().GetPaymentsCount(); }
+		);
 	}
 
 
@@ -49,17 +54,17 @@ namespace LM
 		t_m = localtime(&t);
 
 		std::ostringstream Filename;
-		Filename << 1900 + t_m->tm_year << "-" <<
-			std::setfill('0') << std::setw(2) << 1 + t_m->tm_mon << "-" <<
-			std::setfill('0') << std::setw(2) << t_m->tm_mday << "-" <<
-			std::setfill('0') << std::setw(2) << t_m->tm_hour << "-" <<
-			std::setfill('0') << std::setw(2) << t_m->tm_min << "-" <<
-			std::setfill('0') << std::setw(2) << t_m->tm_sec << (_Param.size() ? "-" : "") <<
-			_Param << ".json";
+		Filename << 1900 + t_m->tm_year << "-" 
+			<< std::setfill('0') << std::setw(2) << 1 + t_m->tm_mon	<< "-" 
+			<< std::setfill('0') << std::setw(2) << t_m->tm_mday		<< "-" 
+			<< std::setfill('0') << std::setw(2) << t_m->tm_hour		<< "-" 
+			<< std::setfill('0') << std::setw(2) << t_m->tm_min		<< "-" 
+			<< std::setfill('0') << std::setw(2) << t_m->tm_sec		<< (_Param.size() ? "-" : "") 
+			<< _Param << ".json";
 		std::cout << Filename.str() << std::endl;
 
-		fs::path SourceFile = "JsDB.json";
-		fs::path TargetParent = "backups/";
+		fs::path SourceFile		= "JsDB.json";
+		fs::path TargetParent	= "backups/";
 
 		auto Target = TargetParent / Filename.str();
 
@@ -409,7 +414,7 @@ namespace LM
 	{
 		if (ImGui::BeginTabItem(u8"Участки"))
 		{
-			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsSize());
+			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsCount());
 
 			if (ImGui::Button(u8"Добавить участок"))
 			{
@@ -717,8 +722,8 @@ namespace LM
 			{
 				if (!CreateMembershipFeePayment.Create)
 				{
-					if (SelectedMembershipFee != -1 && SelectedMembershipFee < m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().m_Payments.size())
-						EditMembershipFeePayment.CreateNewIntermediate(m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments[SelectedMembershipFee].get());
+					if (m_MembershipFeePaymentsTable->GetSelectedId() != -1 && m_MembershipFeePaymentsTable->GetSelectedId() < m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().m_Payments.size())
+						EditMembershipFeePayment.CreateNewIntermediate(m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments[m_MembershipFeePaymentsTable->GetSelectedId()].get());
 				}
 			} ImGui::SameLine();
 			if (ImGui::Button(u8"Проверка начислений"))
@@ -730,7 +735,7 @@ namespace LM
 				DrawDeleteMembershipFeePayment();
 			}
 
-#if 1
+#if 0
 			ColumnsInfo& column = *ColumnsInfo::ColumnsMap["MembershipFee"];
 
 			ImGui::Columns(column.Names.size(), column.Name.c_str(), true); // 4-ways, with border
@@ -971,7 +976,7 @@ namespace LM
 	{
 		std::string Name = u8"платеж##Членские взносы";
 		auto& dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments;
-		int& selected = SelectedMembershipFee;
+		int selected = m_MembershipFeePaymentsTable->GetSelectedId();
 
 		if (m_IsEdit)
 		{
@@ -1013,7 +1018,7 @@ namespace LM
 	{
 		if ((m_IsEdit && m_IsMembershipFeeOpeningBalance) && ImGui::BeginTabItem(u8"Начальное сальдо: членские взносы"))
 		{
-			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsSize());
+			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsCount());
 
 			Date& date = OpeningBalance::s_Date;
 
@@ -1052,7 +1057,7 @@ namespace LM
 			}
 
 
-			for (int i = 0; i < m_DataBase->GetHomesteadsSize(); i++)
+			for (int i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
 			{
 				DrawRectBig(i, column);
 
@@ -2389,7 +2394,7 @@ namespace LM
 
 		if ((m_IsEdit && m_IsElectricityOpeningBalance) && ImGui::BeginTabItem(u8"Начальное сальдо: электроэнергия"))
 		{
-			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsSize());
+			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsCount());
 
 			ColumnsInfo& column = *ColumnsInfo::ColumnsMap["ElectricityOpeningBalance"];
 
@@ -2426,7 +2431,7 @@ namespace LM
 			}
 
 
-			for (int i = 0; i < m_DataBase->GetHomesteadsSize(); i++)
+			for (int i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
 			{
 				DrawRectBig(i, column);
 

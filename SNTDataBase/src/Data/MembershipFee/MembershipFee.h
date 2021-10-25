@@ -15,6 +15,8 @@ namespace LM
 		MembershipFee() = default;
 
 		inline const Money& GetDebt() const { return m_Debt; }
+		inline const std::shared_ptr<const Payment> GetPayment(size_t _Id) const { return m_Payments[_Id]; }
+		inline size_t GetPaymentsCount() const { return m_Payments.size(); }
 
 		void SortPayments();
 
@@ -26,10 +28,6 @@ namespace LM
 
 		std::vector<std::shared_ptr<Payment>> m_Payments;
 		static inline std::vector<Accural> s_Accural;
-
-
-		int IdToDetele = -1;
-
 	};
 
 }

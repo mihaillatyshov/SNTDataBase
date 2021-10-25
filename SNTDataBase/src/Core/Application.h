@@ -202,7 +202,7 @@ namespace LM
 
 		CreateWindow<Payment> CreateMembershipFeePayment;
 		EditWindow<Payment> EditMembershipFeePayment;
-		int SelectedMembershipFee = -1;
+		//int SelectedMembershipFee = -1;
 
 		CreateWindow<ElectricityAccural> CreateElectricityAccural;
 		EditWindow<ElectricityAccural> EditElectricityAccural;
