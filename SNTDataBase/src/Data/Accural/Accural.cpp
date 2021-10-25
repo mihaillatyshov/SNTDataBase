@@ -4,22 +4,22 @@
 namespace LM
 {
 
-    nlohmann::basic_json<> Accural::GetJson() const
-    {
-        nlohmann::basic_json<> result;
-        result["Date"]  = m_Date.GetJson();
-        result["Money"] = m_Money.GetJson();
+	nlohmann::basic_json<> Accural::GetJson() const
+	{
+		nlohmann::basic_json<> result;
+		result["Date"]	= m_Date.GetJson();
+		result["Money"] = m_Money.GetJson();
 
-        return result;
-    }
+		return result;
+	}
 
-    void Accural::SetJson(nlohmann::basic_json<> js)
-    {
-        if (!js.is_object())
-            return;
+	void Accural::SetJson(nlohmann::basic_json<> js)
+	{
+		if (!js.is_object())
+			return;
 
-        m_Date.SetJson(js["Date"]);
-        m_Money.SetJson(js["Money"]);
-    }
+		m_Date.SetJson( js["Date"]);
+		m_Money.SetJson(js["Money"]);
+	}
 
 }

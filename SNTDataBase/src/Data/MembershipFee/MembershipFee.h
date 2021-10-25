@@ -9,27 +9,27 @@
 namespace LM
 {
 
-    class MembershipFee
-    {
-    public:
-        MembershipFee() = default;
+	class MembershipFee
+	{
+	public:
+		MembershipFee() = default;
 
-        inline const Money& GetDebt() const { return m_Debt; }
+		inline const Money& GetDebt() const { return m_Debt; }
 
-        void SortPayments();
+		void SortPayments();
 
-        nlohmann::basic_json<> GetJson() const; 
-        void SetJson(nlohmann::basic_json<> js);
-    public:
-        Money m_Debt;
-        OpeningBalance m_OpeningBalance;
+		nlohmann::basic_json<> GetJson() const;
+		void SetJson(nlohmann::basic_json<> js);
+	public:
+		Money m_Debt;
+		OpeningBalance m_OpeningBalance;
 
-        std::vector<Payment> m_Payments;
-        static inline std::vector<Accural> s_Accural;
+		std::vector<std::shared_ptr<Payment>> m_Payments;
+		static inline std::vector<Accural> s_Accural;
 
 
-        int IdToDetele = -1;
+		int IdToDetele = -1;
 
-    };
+	};
 
 }

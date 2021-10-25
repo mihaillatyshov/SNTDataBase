@@ -6,15 +6,15 @@
 namespace LM
 {
 
-    class Accural
-    {
-    public:
-        static inline Money MembershipFeeAmount = Money(500);
-        nlohmann::basic_json<> GetJson() const;
-        void SetJson(nlohmann::basic_json<> js);
-    public:
-        Date m_Date;
-        Money m_Money;
-    };
+	class Accural
+	{
+	public:
+		static inline Money MembershipFeeAmount = Money(500);
+		nlohmann::basic_json<> GetJson() const;
+		void SetJson(nlohmann::basic_json<> js);
+	public:
+		Date m_Date;
+		Money m_Money;
+	};
 
 }

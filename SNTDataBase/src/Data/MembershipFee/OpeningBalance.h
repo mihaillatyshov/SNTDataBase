@@ -4,11 +4,11 @@
 
 namespace LM
 {
-    class OpeningBalance
-    {
-    public:
-        static inline Date s_Date;
-        Money m_Money;
-    public:
-    };
+	class OpeningBalance
+	{
+	public:
+		static inline Date s_Date;
+		Money m_Money;
+	public:
+	};
 }
