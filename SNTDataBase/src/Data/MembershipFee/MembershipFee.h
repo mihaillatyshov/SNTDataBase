@@ -3,8 +3,9 @@
 #include <vector>
 #include "../Payment/Payment.h"
 #include "OpeningBalance.h"
-#include "../Accural/Accural.h"
+#include "../Accrual/Accrual.h"
 #include <nlohmann/json.hpp>
+#include "Core/Base.h"
 
 namespace LM
 {
@@ -15,7 +16,7 @@ namespace LM
 		MembershipFee() = default;
 
 		inline const Money& GetDebt() const { return m_Debt; }
-		inline const std::shared_ptr<const Payment> GetPayment(size_t _Id) const { return m_Payments[_Id]; }
+		inline const Ref<const Payment> GetPayment(size_t _Id) const { return m_Payments[_Id]; }
 		inline size_t GetPaymentsCount() const { return m_Payments.size(); }
 
 		void SortPayments();
@@ -26,8 +27,8 @@ namespace LM
 		Money m_Debt;
 		OpeningBalance m_OpeningBalance;
 
-		std::vector<std::shared_ptr<Payment>> m_Payments;
-		static inline std::vector<Accural> s_Accural;
+		VectorRef<Payment> m_Payments;
+		static inline std::vector<Accrual> s_Accrual;
 	};
 
 }

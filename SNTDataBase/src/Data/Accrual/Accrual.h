@@ -6,7 +6,7 @@
 namespace LM
 {
 
-	class Accural
+	class Accrual
 	{
 	public:
 		static inline Money MembershipFeeAmount = Money(500);

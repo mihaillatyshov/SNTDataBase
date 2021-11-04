@@ -8,8 +8,9 @@
 #include <GLFW/glfw3.h>
 
 #include "Data/DataBase/DataBase.h"
-#include "Windows/TabsColumns/TabsColumns.h"
 #include "UI/Table/Table.h"
+#include "UI/Tabs/TabsCollection/TabsCollection.h"
+#include "Base.h"
 
 
 namespace LM
@@ -110,7 +111,6 @@ namespace LM
 			bool WidthLoaded = false;
 		};
 
-
 	protected:
 		void DrawMenuBar();
 		void DrawFileMenu();
@@ -120,15 +120,11 @@ namespace LM
 		void DrawDataBase();
 
 		void DrawHomestead();
-		void DrawCreateHomestead();
-		void DrawEditHomestead();
-		void DrawDeleteHomestead(); // With button
 
 		void DrawMembershipFee();
 		void DrawCreateMembershipFeePayment();
 		void DrawEditMembershipFeePayment();
 		void DrawDeleteMembershipFeePayment(); // With button
-
 
 		void DrawElectricity();
 		void DrawCreateElectricity();
@@ -143,7 +139,7 @@ namespace LM
 		void DrawMembershipFeeOpeningBalance();
 		void DrawElectricityOpeningBalance();
 
-		void DrawCheckMembershipAccural();
+		void DrawCheckMembershipAccrual();
 
 		void DrawDropEvent();
 		void DrawEditTariffOnLoad();
@@ -152,7 +148,7 @@ namespace LM
 		void DrawRectBig(int colId, ColumnsInfo& column);
 		bool InputTextString(std::string_view name, std::string& data, int itemWidth = 0, ImGuiInputTextFlags_ flag = ImGuiInputTextFlags_None);
 
-		void RecalculateElectricityAccurals();
+		void RecalculateElectricityAccruals();
 
 
 		void SaveDataBase();
@@ -188,13 +184,11 @@ namespace LM
 
 		GLFWwindow* m_Window;
 
-		static inline std::string s_LoaderVersion;
-
 		bool m_IsEdit;
 		bool m_IsMembershipFeeOpeningBalance = false;
 		bool m_IsElectricityOpeningBalance = false;
 
-		bool m_OpenedMembershipAccural = true;
+		bool m_OpenedMembershipAccrual = true;
 
 		CreateWindow<Homestead> CreateHomestead;
 		EditWindow<Homestead> EditHomestead;
@@ -204,27 +198,29 @@ namespace LM
 		EditWindow<Payment> EditMembershipFeePayment;
 		//int SelectedMembershipFee = -1;
 
-		CreateWindow<ElectricityAccural> CreateElectricityAccural;
-		EditWindow<ElectricityAccural> EditElectricityAccural;
-		int SelectedElectricityAccural = -1;
+		CreateWindow<ElectricityAccrual> CreateElectricityAccrual;
+		EditWindow<ElectricityAccrual> EditElectricityAccrual;
+		//int SelectedElectricityAccrual = -1;
 
 		CreateWindow<Payment> CreateElectricityPayment;
 		EditWindow<Payment> EditElectricityPayment;
-		int SelectedElectricityPayment = -1;
+		//int SelectedElectricityPayment = -1;
 
 		std::vector<std::string> m_Tests;
 
 		bool m_DropInfo = false;
-		std::vector<std::tuple<std::string, ElectricityAccural>> m_DropInfoAccurals;
+		std::vector<std::tuple<std::string, ElectricityAccrual>> m_DropInfoAccruals;
 		bool m_EditTariffOnLoad = false;
-		ElectricityAccuralCosts m_ElectricityAccuralCostsIntermediate;
+		ElectricityAccrualCosts m_ElectricityAccrualCostsIntermediate;
 
 		bool m_ShowDemoWindow = false;
 
-		TabsColumns m_TabsColumns;
+		Ref<Table> m_HomesteadsTable;
+		Ref<Table> m_MembershipFeePaymentsTable;
+		Ref<Table> m_ElectricityAccrualsTable;
+		Ref<Table> m_ElectricityPaymentsTable;
 
-		std::shared_ptr<Table> m_HomesteadsTable;
-		std::shared_ptr<Table> m_MembershipFeePaymentsTable;
+		Ref<TabsCollection> m_HomesteadTabsCollection;
 	};
 
 }

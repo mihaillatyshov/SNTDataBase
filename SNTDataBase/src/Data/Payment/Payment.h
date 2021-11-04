@@ -31,7 +31,7 @@ namespace LM
 		virtual std::vector<std::function<void(void)>> GetDrawableColumns() const override;
 
 		nlohmann::basic_json<> GetJson() const;
-		void SetJson(nlohmann::basic_json<> js);
+		void SetJson(nlohmann::basic_json<> _JS);
 	protected:
 		void DrawDocumentNumberEdit();
 

@@ -61,19 +61,12 @@ namespace LM
 						}
 					}
 
-					if (ImGui::TableSetColumnIndex(1))
+					for (size_t i = 1; i < ElementDrawableColumns.size(); i++)
 					{
-						ElementDrawableColumns[1]();
-					}
-
-					if (ImGui::TableSetColumnIndex(2))
-					{
-						ElementDrawableColumns[2]();
-					}
-
-					if (ImGui::TableSetColumnIndex(3))
-					{
-						ElementDrawableColumns[3]();
+						if (ImGui::TableSetColumnIndex(i))
+						{
+							ElementDrawableColumns[i]();
+						}
 					}
 
 					ImGui::PopID();

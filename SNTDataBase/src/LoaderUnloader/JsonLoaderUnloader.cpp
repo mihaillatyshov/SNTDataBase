@@ -5,96 +5,83 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Utils/JsonUtils.h"
+
 namespace LM
 {
 
-	JsonLoaderUnloader::JsonLoaderUnloader(std::string_view fileName, DataBase* dataBase)
+	JsonLoaderUnloader::JsonLoaderUnloader(std::string_view _FileName, DataBase* _DataBase)
 	{
-		SetFileName(fileName);
-		SetDataBase(dataBase);
+		SetFileName(_FileName);
+		SetDataBase(_DataBase);
 	}
 
 	void JsonLoaderUnloader::Load()
 	{
-		nlohmann::json js = LoadFile();
+		nlohmann::json JS = LoadFile();
 
-		if (!js.is_object())
+		if (!JS.is_object())
 			return;
 
-		m_DataBase->m_Homesteads.resize(js["Homesteads"].size());
-		for (int i = 0; i < js["Homesteads"].size(); i++)
-		{
-			m_DataBase->m_Homesteads[i] = std::make_shared<Homestead>();
-			m_DataBase->m_Homesteads[i]->SetJson(js["Homesteads"][i]);
-		}
+		nlohmann::SetVector(m_DataBase->m_Homesteads, JS, "Homesteads");
 
-		if (js["OpeningBalance"].is_object())
-			OpeningBalance::s_Date.SetJson(js["OpeningBalance"]["Date"]);
+		if (JS["OpeningBalance"].is_object())
+			OpeningBalance::s_Date.SetJson(JS["OpeningBalance"]["Date"]);
 
-		if (js["MembershipFee"].is_object())
+		if (JS["MembershipFee"].is_object())
 		{
-			MembershipFee::s_Accural.resize(js["MembershipFee"]["Accural"].size());
-			for (int i = 0; i < js["MembershipFee"]["Accural"].size(); i++)
-			{
-				MembershipFee::s_Accural[i].SetJson(js["MembershipFee"]["Accural"][i]);
-			}
+			nlohmann::SetVector(MembershipFee::s_Accrual, JS["MembershipFee"], "Accrual");
 		}
 	}
 
 	void JsonLoaderUnloader::Unload()
 	{
+		nlohmann::json JS;
 
-		nlohmann::json js;
-		for (int i = 0; i < m_DataBase->m_Homesteads.size(); i++)
-		{
-			js["Homesteads"][i] = m_DataBase->m_Homesteads[i]->GetJson();
-		}
+		JS["Homesteads"] = nlohmann::GetVector(m_DataBase->m_Homesteads);
 
-		js["OpeningBalance"]["Date"] = OpeningBalance::s_Date.GetJson();
+		JS["OpeningBalance"]["Date"] = OpeningBalance::s_Date.GetJson();
 
-		for (int i = 0; i < MembershipFee::s_Accural.size(); i++)
-		{
-			js["MembershipFee"]["Accural"][i] = MembershipFee::s_Accural[i].GetJson();
-		}
+		JS["MembershipFee"]["Accrual"] = nlohmann::GetVector(MembershipFee::s_Accrual);
 
-		UnloadFile(js);
+		UnloadFile(JS);
 	}
 
-	void JsonLoaderUnloader::UnloadFile(nlohmann::json js)
+	void JsonLoaderUnloader::UnloadFile(nlohmann::json _JS)
 	{
-		std::ofstream fout(m_FileName);
-		if (!fout.is_open())
+		std::ofstream Fout(m_FileName);
+		if (!Fout.is_open())
 		{
 			std::cout << "Can't open file to Unload Json Data! \n";
 			return;
 		}
 		//std::cout << "Writing JSON to file . . . \n";
-		fout << std::setw(4) << js;
+		Fout << std::setw(4) << _JS;
 		std::cout << "Writing is done \n";
-		fout.close();
+		Fout.close();
 	}
 
 	nlohmann::json JsonLoaderUnloader::LoadFile()
 	{
-		std::ifstream fin(m_FileName);
-		if (!fin.is_open())
+		std::ifstream Fin(m_FileName);
+		if (!Fin.is_open())
 		{
 			std::cout << "Can't open file to Load Json Data! \n";
 			return nlohmann::json();
 		}
-		nlohmann::json js;
+		nlohmann::json JS;
 		try
 		{
-			fin >> js;
+			Fin >> JS;
 			std::cout << "Reading is done \n";
 		}
 		catch (...)
 		{
 			std::cout << "We gote some error in json! \n";
 		}
-		fin.close();
+		Fin.close();
 
-		return js;
+		return JS;
 	}
 
 }

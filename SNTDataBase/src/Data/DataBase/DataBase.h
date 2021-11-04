@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "../Homestead/Homestead.h"
+#include "Core/Base.h"
 
 namespace LM
 {
@@ -10,14 +11,17 @@ namespace LM
 	class DataBase
 	{
 	public:
-		void Push(const Homestead& homestead);
+		void AddHomestead(const Homestead& _Homestead);
+		void AddHomestead(Ref<const TabDataStruct> _TabDS);
+		void EditHomestead(size_t _HsId, Ref<const TabDataStruct> _TabDS);
+		void DeleteHomestead(size_t _HsId);
 
-		const std::shared_ptr<const Homestead> GetHomestead(size_t _Id) const { return m_Homesteads[_Id]; }
+		const Ref<const Homestead> GetHomestead(size_t _Id) const { return m_Homesteads[_Id]; }
 		size_t GetHomesteadsCount() const { return m_Homesteads.size(); }
 
 		//std::vector<Homestead>& GetHomesteads() { return m_Homesteads; }
 
-		std::vector<std::shared_ptr<Homestead>> m_Homesteads;
+		VectorRef<Homestead> m_Homesteads;
 	};
 
 }

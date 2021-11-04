@@ -7,11 +7,11 @@
 namespace LM
 {
 
-	class OtherElectricityAccuralCost
+	class OtherElectricityAccrualCost
 	{
 	public:
-		OtherElectricityAccuralCost() = default;
-		OtherElectricityAccuralCost(std::string_view _Name, const Money& _Money)
+		OtherElectricityAccrualCost() = default;
+		OtherElectricityAccrualCost(std::string_view _Name, const Money& _Money)
 			: m_Name(_Name), m_Money(_Money) { }
 
 		nlohmann::basic_json<> GetJson() const;

@@ -1,10 +1,10 @@
-#include "Accural.h"
-#include <nlohmann/JsonUtils.h>
+#include "Accrual.h"
+#include "Utils/JsonUtils.h"
 
 namespace LM
 {
 
-	nlohmann::basic_json<> Accural::GetJson() const
+	nlohmann::basic_json<> Accrual::GetJson() const
 	{
 		nlohmann::basic_json<> result;
 		result["Date"]	= m_Date.GetJson();
@@ -13,7 +13,7 @@ namespace LM
 		return result;
 	}
 
-	void Accural::SetJson(nlohmann::basic_json<> js)
+	void Accrual::SetJson(nlohmann::basic_json<> js)
 	{
 		if (!js.is_object())
 			return;

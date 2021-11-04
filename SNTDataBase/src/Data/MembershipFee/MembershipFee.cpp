@@ -1,16 +1,16 @@
 #include "MembershipFee.h"
-#include <time.h>
 
-#include <nlohmann/JsonUtils.h>
 #include <algorithm>
 #include <iostream>
+
+#include "Utils/JsonUtils.h"
 
 namespace LM
 {
 
 	void MembershipFee::SortPayments()
 	{
-		std::sort(m_Payments.begin(), m_Payments.end(), [](std::shared_ptr<Payment> first, std::shared_ptr<Payment> second)
+		std::sort(m_Payments.begin(), m_Payments.end(), [](const Ref<const Payment> first, const Ref<const Payment> second)
 			{
 				return first->GetDate() > second->GetDate();
 			});
@@ -22,7 +22,7 @@ namespace LM
 		result["Debt"]				= m_Debt.GetJson();
 		result["OpeningBalance"]	= m_OpeningBalance.m_Money.GetJson();
 
-		result["Payments"] = nlohmann::GetVectorSptr(m_Payments);
+		result["Payments"] = nlohmann::GetVector(m_Payments);
 
 		return result;
 	}
@@ -35,7 +35,7 @@ namespace LM
 		m_Debt.SetJson(					 js["Debt"]);
 		m_OpeningBalance.m_Money.SetJson(js["OpeningBalance"]);
 
-		nlohmann::SetVectorSptr(m_Payments, js, "Payments");
+		nlohmann::SetVector(m_Payments, js, "Payments");
 	}
 
 }

@@ -61,7 +61,7 @@ int main(int, char**)
 		});
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1); // Enable vsync
+	glfwSwapInterval(0); // Enable vsync
 
 
 

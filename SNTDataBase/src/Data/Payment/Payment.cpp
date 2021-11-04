@@ -1,6 +1,6 @@
 #include "Payment.h"
 
-#include <nlohmann/JsonUtils.h>
+#include "Utils/JsonUtils.h"
 
 namespace LM
 {
@@ -11,12 +11,12 @@ namespace LM
 
 	void Payment::DrawDocumentNumberEdit()
 	{
-		int bufSize = 20;
+		int BufSize = 20;
 		//std::string InputId = "##DocumentNumber"; //+ std::to_string(id);
-		char* NameBuf = new char[bufSize] { 0 };
+		char* NameBuf = new char[BufSize] { 0 };
 		memcpy(NameBuf, m_DocumentNumber.c_str(), m_DocumentNumber.size());
 		ImGui::PushItemWidth(250);
-		if (ImGui::InputText(u8"Номер платежа", NameBuf, bufSize))
+		if (ImGui::InputText(u8"Номер платежа", NameBuf, BufSize))
 			m_DocumentNumber = NameBuf;
 		delete[] NameBuf;
 		ImGui::PopItemWidth();
@@ -47,24 +47,24 @@ namespace LM
 
 	nlohmann::basic_json<> Payment::GetJson() const
 	{
-		nlohmann::basic_json<> result;
-		result["Amount"]			= m_Amount.GetJson();
-		result["Date"]				= m_Date.GetJson();
-		result["FormOfPayment"]		= m_FormOfPayment;
-		result["DocumentNumber"]	= m_DocumentNumber;
+		nlohmann::basic_json<> Result;
+		Result["Amount"]			= m_Amount.GetJson();
+		Result["Date"]				= m_Date.GetJson();
+		Result["FormOfPayment"]		= m_FormOfPayment;
+		Result["DocumentNumber"]	= m_DocumentNumber;
 
-		return result;
+		return Result;
 	}
 
-	void Payment::SetJson(nlohmann::basic_json<> js)
+	void Payment::SetJson(nlohmann::basic_json<> _JS)
 	{
-		if (!js.is_object())
+		if (!_JS.is_object())
 			return;
 
-		m_Amount.SetJson(js["Amount"]);
-		m_Date.SetJson(	 js["Date"]);
-		nlohmann::SetValue(m_FormOfPayment, js, "FormOfPayment");
-		nlohmann::SetValue(m_DocumentNumber, js, "DocumentNumber");
+		m_Amount.SetJson(_JS["Amount"]);
+		m_Date.SetJson(_JS["Date"]);
+		nlohmann::SetValue(m_FormOfPayment,  _JS, "FormOfPayment");
+		nlohmann::SetValue(m_DocumentNumber, _JS, "DocumentNumber");
 	}
 
 

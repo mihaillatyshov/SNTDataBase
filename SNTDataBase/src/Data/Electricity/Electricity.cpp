@@ -1,7 +1,8 @@
 #include "Electricity.h"
 
 #include <algorithm>
-#include <nlohmann/JsonUtils.h>
+
+#include "Utils/JsonUtils.h"
 
 namespace LM
 {
@@ -10,48 +11,48 @@ namespace LM
 	{
 		Sort();
 		m_All = m_OpeningBalance;
-		for (int i = 1; i < m_Accurals.size(); i++)
+		for (int i = 1; i < m_Accruals.size(); i++)
 		{
 			//int cost = 6.57 * 1'254.789; // = 8'243.963'73
 			// 657 * 1'254'789 = 824'396'373 //    / 1.000
-			int64_t DayWatt = m_Accurals[i].m_Day.m_Watt - m_Accurals[i - 1].m_Day.m_Watt;
-			int64_t NightWatt = m_Accurals[i].m_Night.m_Watt - m_Accurals[i - 1].m_Night.m_Watt;
-			Money Day = CalcMonthMoney(DayWatt, m_Accurals[i].m_Costs.m_Day);
-			Money Night = CalcMonthMoney(NightWatt, m_Accurals[i].m_Costs.m_Night);
+			int64_t DayWatt = m_Accruals[i]->m_Day.m_Watt - m_Accruals[i - 1]->m_Day.m_Watt;
+			int64_t NightWatt = m_Accruals[i]->m_Night.m_Watt - m_Accruals[i - 1]->m_Night.m_Watt;
+			Money Day = CalcMonthMoney(DayWatt, m_Accruals[i]->m_Costs.m_Day);
+			Money Night = CalcMonthMoney(NightWatt, m_Accruals[i]->m_Costs.m_Night);
 			Money Losses = CalcLosses(Day, Night);
 			std::cout << Day << std::endl;
 			m_All += Losses;
 			m_All += CalcWithBenefits(Day, Night, _HasBenefits);
-			for (auto& [Name, Amount] : m_Accurals[i].m_Costs.m_Others)
+			for (auto& [Name, Amount] : m_Accruals[i]->m_Costs.m_Others)
 			{
 				m_All += Amount;
 			}
 		}
 		for (auto& Pay : m_Payments)
 		{
-			m_All -= Pay.m_Amount;
+			m_All -= Pay->m_Amount;
 		}
 	}
 
 	void Electricity::Sort()
 	{
-		std::sort(m_Accurals.begin(), m_Accurals.end(), [](const ElectricityAccural& First, const ElectricityAccural& Second)
+		std::sort(m_Accruals.begin(), m_Accruals.end(), [](const Ref<const ElectricityAccrual> First, const Ref<const ElectricityAccrual> Second)
 			{
-				return First.m_Date < Second.m_Date;
+				return First->m_Date < Second->m_Date;
 			});
 	}
 
 	void Electricity::SortPayments()
 	{
-		std::sort(m_Payments.begin(), m_Payments.end(), [](const Payment& First, const Payment& Second)
+		std::sort(m_Payments.begin(), m_Payments.end(), [](const Ref<const Payment> First, const Ref<const Payment> Second)
 			{
-				return First.m_Date > Second.m_Date;
+				return First->m_Date > Second->m_Date;
 			});
 	}
 
 	Money Electricity::CalcMonthMoney(int64_t _Watt, const Money& _Cost)
 	{
-		// TODO: Formula here
+		// TODO: Formula here <Trello #20>
 		int64_t MonthCost = _Watt * _Cost.m_Amount;
 		int64_t Rub = MonthCost / 100'000;
 		int64_t Cop = (MonthCost / 1'000) % 100;
@@ -97,25 +98,25 @@ namespace LM
 
 	}
 
-	Money Electricity::CalcAccuralsToDate(const Date& _Date, bool _HasBenefits)
+	Money Electricity::CalcAccrualsToDate(const Date& _Date, bool _HasBenefits)
 	{
 		Money Res = m_OpeningBalance;
-		for (int i = 1; i < m_Accurals.size(); i++)
+		for (int i = 1; i < m_Accruals.size(); i++)
 		{
-			if (m_Accurals[i].m_Date > _Date)
+			if (m_Accruals[i]->m_Date > _Date)
 				break;
 
 			//int cost = 6.57 * 1'254.789; // = 8'243.963'73
 			// 657 * 1'254'789 = 824'396'373 //    / 1.000
-			int64_t DayKWatt = m_Accurals[i].m_Day.m_Watt - m_Accurals[i - 1].m_Day.m_Watt;
-			int64_t NightKWatt = m_Accurals[i].m_Night.m_Watt - m_Accurals[i - 1].m_Night.m_Watt;
-			Money Day = CalcMonthMoney(DayKWatt, m_Accurals[i].m_Costs.m_Day);
-			Money Night = CalcMonthMoney(NightKWatt, m_Accurals[i].m_Costs.m_Night);
+			int64_t DayKWatt = m_Accruals[i]->m_Day.m_Watt - m_Accruals[i - 1]->m_Day.m_Watt;
+			int64_t NightKWatt = m_Accruals[i]->m_Night.m_Watt - m_Accruals[i - 1]->m_Night.m_Watt;
+			Money Day = CalcMonthMoney(DayKWatt, m_Accruals[i]->m_Costs.m_Day);
+			Money Night = CalcMonthMoney(NightKWatt, m_Accruals[i]->m_Costs.m_Night);
 			Money Losses = CalcLosses(Day, Night);
 			std::cout << Day << std::endl;
 			Res += Losses;
 			Res += CalcWithBenefits(Day, Night, _HasBenefits);
-			for (auto& [Name, Amount] : m_Accurals[i].m_Costs.m_Others)
+			for (auto& [Name, Amount] : m_Accruals[i]->m_Costs.m_Others)
 			{
 				Res += Amount;
 				std::cout << "A: " << Amount << std::endl;
@@ -124,11 +125,11 @@ namespace LM
 		std::cout << "R1: " << Res << std::endl;
 		for (auto& Pay : m_Payments)
 		{
-			if (Pay.m_Date > _Date)
+			if (Pay->m_Date > _Date)
 				break;
 
-			Res -= Pay.m_Amount;
-			std::cout << "P: " << Pay.m_Amount << std::endl;
+			Res -= Pay->m_Amount;
+			std::cout << "P: " << Pay->m_Amount << std::endl;
 
 		}
 
@@ -143,7 +144,7 @@ namespace LM
 		Result["OpeningBalance"] = m_OpeningBalance.GetJson();
 
 		Result["Payments"] = nlohmann::GetVector(m_Payments);
-		Result["Accurals"] = nlohmann::GetVector(m_Accurals);
+		Result["Accruals"] = nlohmann::GetVector(m_Accruals);
 
 		return Result;
 	}
@@ -157,7 +158,7 @@ namespace LM
 		m_OpeningBalance.SetJson(_JS["OpeningBalance"]);
 
 		nlohmann::SetVector(m_Payments, _JS, "Payments");
-		nlohmann::SetVector(m_Accurals, _JS, "Accurals");
+		nlohmann::SetVector(m_Accruals, _JS, "Accruals");
 	}
 
 }

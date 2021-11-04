@@ -4,9 +4,9 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-#include "ElectricityAccural.h"
+#include "ElectricityAccrual.h"
 #include "../Payment/Payment.h"
-
+#include "Core/Base.h"
 
 namespace LM
 {
@@ -23,7 +23,13 @@ namespace LM
 		static Money CalcPercent(Money _Money, int _Percent);
 		static Money CalcLosses(const Money& _Day, const Money& _Night);
 		static Money CalcWithBenefits(const Money& _Day, const Money& _Night, bool _HasBenefits);
-		Money CalcAccuralsToDate(const Date& _Date, bool _HasBenefits); // Include this Date
+		Money CalcAccrualsToDate(const Date& _Date, bool _HasBenefits); // Include this Date
+
+		inline const Ref<const ElectricityAccrual> GetAccrual(size_t _Id) const { return m_Accruals[_Id]; }
+		size_t GetAccrualsCount() const { return m_Accruals.size(); }
+
+		inline const Ref<const Payment> GetPayment(size_t _Id) const { return m_Payments[_Id]; }
+		size_t GetPaymentsCount() const { return m_Payments.size(); }
 
 		inline const Money& GetAll() const { return m_All; }
 
@@ -32,9 +38,9 @@ namespace LM
 	protected:
 		void Sort();
 	public:
-		Money                           m_All;
-		Money                           m_OpeningBalance;
-		std::vector<Payment>            m_Payments;
-		std::vector<ElectricityAccural> m_Accurals;
+		Money							m_All;
+		Money							m_OpeningBalance;
+		VectorRef<Payment>				m_Payments;
+		VectorRef<ElectricityAccrual>	m_Accruals;
 	};
 }

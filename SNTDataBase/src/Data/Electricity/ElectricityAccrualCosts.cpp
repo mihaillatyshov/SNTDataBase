@@ -1,11 +1,11 @@
-#include "ElectricityAccuralCosts.h"
+#include "ElectricityAccrualCosts.h"
 
-#include <nlohmann/JsonUtils.h>
+#include "Utils/JsonUtils.h"
 
 namespace LM
 {
 
-	nlohmann::basic_json<> ElectricityAccuralCosts::GetJson() const
+	nlohmann::basic_json<> ElectricityAccrualCosts::GetJson() const
 	{
 		nlohmann::basic_json<> Result;
 		Result["Day"]	= m_Day.GetJson();
@@ -16,7 +16,7 @@ namespace LM
 		return Result;
 	}
 
-	void ElectricityAccuralCosts::SetJson(nlohmann::basic_json<> _JS)
+	void ElectricityAccrualCosts::SetJson(nlohmann::basic_json<> _JS)
 	{
 		if (!_JS.is_object())
 			return;
