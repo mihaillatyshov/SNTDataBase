@@ -119,22 +119,10 @@ namespace LM
 
 		void DrawDataBase();
 
-		void DrawHomestead();
-
-		void DrawMembershipFee();
-		void DrawCreateMembershipFeePayment();
-		void DrawEditMembershipFeePayment();
-		void DrawDeleteMembershipFeePayment(); // With button
-
-		void DrawElectricity();
-		void DrawCreateElectricity();
-		void DrawEditElectricity();
-		void DrawDeleteElectricity();
-
-		void DrawElectricityPayment();
-		void DrawCreateElectricityPayment();
-		void DrawEditElectricityPayment();
-		void DrawDeleteElectricityPayment();
+		void DrawHomesteads();
+		void DrawMembershipFeePayments();
+		void DrawElectricityAccruals();
+		void DrawElectricityPayments();
 
 		void DrawMembershipFeeOpeningBalance();
 		void DrawElectricityOpeningBalance();
@@ -221,6 +209,9 @@ namespace LM
 		Ref<Table> m_ElectricityPaymentsTable;
 
 		Ref<TabsCollection> m_HomesteadTabsCollection;
+		Ref<TabsCollection> m_MembershipFeePaymentTabsCollection;
+		Ref<TabsCollection> m_ElectricityAccrualTabsCollection;
+		Ref<TabsCollection> m_ElectricityPaymentTabsCollection;
 	};
 
 }

@@ -16,6 +16,18 @@ namespace LM
 		void EditHomestead(size_t _HsId, Ref<const TabDataStruct> _TabDS);
 		void DeleteHomestead(size_t _HsId);
 
+		void AddMembershipFeePayment(size_t _HsId, Ref<const TabDataStruct> _TabDS);
+		void EditMembershipFeePayment(size_t _HsId, size_t _PayId, Ref<const TabDataStruct> _TabDS);
+		void DeleteMembershipFeePayment(size_t _HsId, size_t _PayId);
+
+		void AddElectricityAccrual(size_t _HsId, Ref<const TabDataStruct> _TabDS);
+		void EditElectricityAccrual(size_t _HsId, size_t _AccId, Ref<const TabDataStruct> _TabDS);
+		void DeleteElectricityAccrual(size_t _HsId, size_t _AccId);
+
+		void AddElectricityPayment(size_t _HsId, Ref<const TabDataStruct> _TabDS);
+		void EditElectricityPayment(size_t _HsId, size_t _PayId, Ref<const TabDataStruct> _TabDS);
+		void DeleteElectricityPayment(size_t _HsId, size_t _PayId);
+
 		const Ref<const Homestead> GetHomestead(size_t _Id) const { return m_Homesteads[_Id]; }
 		size_t GetHomesteadsCount() const { return m_Homesteads.size(); }
 

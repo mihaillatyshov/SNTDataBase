@@ -21,14 +21,6 @@ namespace LM
 		case SelectedTab::EDIT:
 			DrawEdit();
 			break;
-		//case SelectedTab::DELETE_START:
-		//	ImGui::OpenPopup(u8"Удалить?");
-		//	m_SelectedTab = SelectedTab::DELETE;
-		//	DrawDelete();
-		//	break;
-		//case SelectedTab::DELETE:
-		//	DrawDelete();
-		//	break;
 		default:
 			break;
 		}
@@ -70,15 +62,10 @@ namespace LM
 
 		PopId();
 	}
-	//void TabsCollection::SetDelete(std::function<void(void)> _DeleteElement)
-	//{
-	//	m_SelectedTab = SelectedTab::DELETE_START;
-	//	m_Callback = [=](Ref<const TabDataStruct>) { _DeleteElement(); };
-	//}
 
 	void TabsCollection::DrawCreate()
 	{
-		if (ImGui::BeginTabItem(m_TabName.data(), NULL, ImGuiTabItemFlags_SetSelected))
+		if (ImGui::BeginTabItem((u8"Добавление " + m_TabName).data(), NULL, ImGuiTabItemFlags_SetSelected))
 		{
 			m_DataStrucure->Draw();
 			DrawButtons(u8"Добавить");
@@ -89,7 +76,7 @@ namespace LM
 
 	void TabsCollection::DrawEdit()
 	{
-		if (ImGui::BeginTabItem(m_TabName.data(), NULL, ImGuiTabItemFlags_SetSelected))
+		if (ImGui::BeginTabItem((u8"Редактирование " + m_TabName).data(), NULL, ImGuiTabItemFlags_SetSelected))
 		{
 			m_DataStrucure->Draw();
 			DrawButtons(u8"Изменить");
@@ -97,21 +84,6 @@ namespace LM
 			ImGui::EndTabItem();
 		}
 	}
-
-	//void TabsCollection::DrawDelete()
-	//{
-	//	DrawPopup
-	//	(
-	//		[=]() 
-	//		{ 
-	//			m_Callback(nullptr);
-	//			CloseTab(true); 
-	//		}, 
-	//		u8"УДАЛЕНИЕ без возможности восстановления!\n\n\n\n\n", 
-	//		u8"Удалить"
-	//	);
-	//
-	//}
 
 	void TabsCollection::DrawButtons(std::string_view _BtnOk)
 	{

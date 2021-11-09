@@ -5,19 +5,30 @@
 namespace LM
 {
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Payment /////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////
+	Payment::Payment(Ref<const TabDataStruct> _TabDS)
+	{
+		m_Data = std::static_pointer_cast<const PaymentTabDS>(_TabDS)->GetData();
+	}
+
+	void Payment::Edit(Ref<const TabDataStruct> _TabDS)
+	{
+		m_Data = std::static_pointer_cast<const PaymentTabDS>(_TabDS)->GetData();
+	}
+
+	void Payment::FillDataStruct(Ref<TabDataStruct>& _TabDS) const
+	{
+		_TabDS = CreateRef<PaymentTabDS>(m_Data);
+	}
 
 	void Payment::DrawDocumentNumberEdit()
 	{
 		int BufSize = 20;
 		//std::string InputId = "##DocumentNumber"; //+ std::to_string(id);
 		char* NameBuf = new char[BufSize] { 0 };
-		memcpy(NameBuf, m_DocumentNumber.c_str(), m_DocumentNumber.size());
+		memcpy(NameBuf, m_Data.DocumentNumber.c_str(), m_Data.DocumentNumber.size());
 		ImGui::PushItemWidth(250);
 		if (ImGui::InputText(u8"Номер платежа", NameBuf, BufSize))
-			m_DocumentNumber = NameBuf;
+			m_Data.DocumentNumber = NameBuf;
 		delete[] NameBuf;
 		ImGui::PopItemWidth();
 	}
@@ -28,11 +39,11 @@ namespace LM
 		{
 			[=]()
 			{
-				m_Date.Draw();
+				m_Data.Date.Draw();
 			},
 			[=]()
 			{
-				m_Amount.Draw();
+				m_Data.Amount.Draw();
 			},
 			[=]()
 			{
@@ -40,7 +51,7 @@ namespace LM
 			},
 			[=]()
 			{
-				ImGui::TextUnformatted(m_DocumentNumber.c_str());
+				ImGui::TextUnformatted(m_Data.DocumentNumber.c_str());
 			}
 		};
 	}
@@ -48,10 +59,10 @@ namespace LM
 	nlohmann::basic_json<> Payment::GetJson() const
 	{
 		nlohmann::basic_json<> Result;
-		Result["Amount"]			= m_Amount.GetJson();
-		Result["Date"]				= m_Date.GetJson();
-		Result["FormOfPayment"]		= m_FormOfPayment;
-		Result["DocumentNumber"]	= m_DocumentNumber;
+		Result["Amount"]			= m_Data.Amount.GetJson();
+		Result["Date"]				= m_Data.Date.GetJson();
+		Result["FormOfPayment"]		= m_Data.FormOfPayment;
+		Result["DocumentNumber"]	= m_Data.DocumentNumber;
 
 		return Result;
 	}
@@ -61,10 +72,10 @@ namespace LM
 		if (!_JS.is_object())
 			return;
 
-		m_Amount.SetJson(_JS["Amount"]);
-		m_Date.SetJson(_JS["Date"]);
-		nlohmann::SetValue(m_FormOfPayment,  _JS, "FormOfPayment");
-		nlohmann::SetValue(m_DocumentNumber, _JS, "DocumentNumber");
+		m_Data.Amount.SetJson(_JS["Amount"]);
+		m_Data.Date.SetJson(  _JS["Date"]);
+		nlohmann::SetValue(m_Data.FormOfPayment,  _JS, "FormOfPayment");
+		nlohmann::SetValue(m_Data.DocumentNumber, _JS, "DocumentNumber");
 	}
 
 

@@ -21,12 +21,10 @@ namespace LM
 
 		void SetCreate(TAB_F _CreateElement, Ref<TabDataStruct> _TabDataStruct);
 		void SetEdit(TAB_F _EditElement, Ref<const TabElement> _TabEditElement);
-		//void SetDelete(std::function<void(void)> _DeleteElement);
 		void DrawDeleteButton(std::string_view _BtnLable, std::function<void(void)> _DeleteElement, bool _IsSelected);
 	protected:
 		void DrawCreate();
 		void DrawEdit();
-		//void DrawDelete();
 		void DrawButtons(std::string_view _BtnOk);
 		void DrawPopup(std::function<void(void)> _OkCallback, std::string_view _Desc, std::string_view _BtnOk);
 		void NotifyTable();

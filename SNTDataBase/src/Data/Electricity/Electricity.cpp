@@ -15,30 +15,30 @@ namespace LM
 		{
 			//int cost = 6.57 * 1'254.789; // = 8'243.963'73
 			// 657 * 1'254'789 = 824'396'373 //    / 1.000
-			int64_t DayWatt = m_Accruals[i]->m_Day.m_Watt - m_Accruals[i - 1]->m_Day.m_Watt;
-			int64_t NightWatt = m_Accruals[i]->m_Night.m_Watt - m_Accruals[i - 1]->m_Night.m_Watt;
-			Money Day = CalcMonthMoney(DayWatt, m_Accruals[i]->m_Costs.m_Day);
-			Money Night = CalcMonthMoney(NightWatt, m_Accruals[i]->m_Costs.m_Night);
+			int64_t DayWatt = m_Accruals[i]->m_Data.Day.m_Watt - m_Accruals[i - 1]->m_Data.Day.m_Watt;
+			int64_t NightWatt = m_Accruals[i]->m_Data.Night.m_Watt - m_Accruals[i - 1]->m_Data.Night.m_Watt;
+			Money Day = CalcMonthMoney(DayWatt, m_Accruals[i]->m_Data.Costs.m_Day);
+			Money Night = CalcMonthMoney(NightWatt, m_Accruals[i]->m_Data.Costs.m_Night);
 			Money Losses = CalcLosses(Day, Night);
 			std::cout << Day << std::endl;
 			m_All += Losses;
 			m_All += CalcWithBenefits(Day, Night, _HasBenefits);
-			for (auto& [Name, Amount] : m_Accruals[i]->m_Costs.m_Others)
+			for (auto& [Name, Amount] : m_Accruals[i]->m_Data.Costs.m_Others)
 			{
 				m_All += Amount;
 			}
 		}
 		for (auto& Pay : m_Payments)
 		{
-			m_All -= Pay->m_Amount;
+			m_All -= Pay->m_Data.Amount;
 		}
 	}
 
-	void Electricity::Sort()
+	void Electricity::SortAccruals()
 	{
 		std::sort(m_Accruals.begin(), m_Accruals.end(), [](const Ref<const ElectricityAccrual> First, const Ref<const ElectricityAccrual> Second)
 			{
-				return First->m_Date < Second->m_Date;
+				return First->m_Data.Date < Second->m_Data.Date;
 			});
 	}
 
@@ -46,9 +46,16 @@ namespace LM
 	{
 		std::sort(m_Payments.begin(), m_Payments.end(), [](const Ref<const Payment> First, const Ref<const Payment> Second)
 			{
-				return First->m_Date > Second->m_Date;
+				return First->m_Data.Date > Second->m_Data.Date;
 			});
 	}
+
+	void Electricity::Sort() 
+	{
+		SortAccruals(); 
+		SortPayments(); 
+	}
+
 
 	Money Electricity::CalcMonthMoney(int64_t _Watt, const Money& _Cost)
 	{
@@ -103,20 +110,20 @@ namespace LM
 		Money Res = m_OpeningBalance;
 		for (int i = 1; i < m_Accruals.size(); i++)
 		{
-			if (m_Accruals[i]->m_Date > _Date)
+			if (m_Accruals[i]->m_Data.Date > _Date)
 				break;
 
 			//int cost = 6.57 * 1'254.789; // = 8'243.963'73
 			// 657 * 1'254'789 = 824'396'373 //    / 1.000
-			int64_t DayKWatt = m_Accruals[i]->m_Day.m_Watt - m_Accruals[i - 1]->m_Day.m_Watt;
-			int64_t NightKWatt = m_Accruals[i]->m_Night.m_Watt - m_Accruals[i - 1]->m_Night.m_Watt;
-			Money Day = CalcMonthMoney(DayKWatt, m_Accruals[i]->m_Costs.m_Day);
-			Money Night = CalcMonthMoney(NightKWatt, m_Accruals[i]->m_Costs.m_Night);
+			int64_t DayKWatt = m_Accruals[i]->m_Data.Day.m_Watt - m_Accruals[i - 1]->m_Data.Day.m_Watt;
+			int64_t NightKWatt = m_Accruals[i]->m_Data.Night.m_Watt - m_Accruals[i - 1]->m_Data.Night.m_Watt;
+			Money Day = CalcMonthMoney(DayKWatt, m_Accruals[i]->m_Data.Costs.m_Day);
+			Money Night = CalcMonthMoney(NightKWatt, m_Accruals[i]->m_Data.Costs.m_Night);
 			Money Losses = CalcLosses(Day, Night);
 			std::cout << Day << std::endl;
 			Res += Losses;
 			Res += CalcWithBenefits(Day, Night, _HasBenefits);
-			for (auto& [Name, Amount] : m_Accruals[i]->m_Costs.m_Others)
+			for (auto& [Name, Amount] : m_Accruals[i]->m_Data.Costs.m_Others)
 			{
 				Res += Amount;
 				std::cout << "A: " << Amount << std::endl;
@@ -125,16 +132,46 @@ namespace LM
 		std::cout << "R1: " << Res << std::endl;
 		for (auto& Pay : m_Payments)
 		{
-			if (Pay->m_Date > _Date)
+			if (Pay->m_Data.Date > _Date)
 				break;
 
-			Res -= Pay->m_Amount;
-			std::cout << "P: " << Pay->m_Amount << std::endl;
+			Res -= Pay->m_Data.Amount;
+			std::cout << "P: " << Pay->m_Data.Amount << std::endl;
 
 		}
 
 		std::cout << "R2: " << Res << std::endl;
 		return Res;
+	}
+
+	void Electricity::AddAccrual(Ref<const TabDataStruct> _TabDS)
+	{
+		m_Accruals.push_back(CreateRef<ElectricityAccrual>(_TabDS));
+	}
+
+	void Electricity::EditAccrual(size_t _AccId, Ref<const TabDataStruct> _TabDS)
+	{
+		m_Accruals[_AccId]->Edit(_TabDS);
+	}
+
+	void Electricity::DeleteAccrual(size_t _AccId)
+	{
+		m_Accruals.erase(m_Accruals.begin() + _AccId);
+	}
+
+	void Electricity::AddPayment(Ref<const TabDataStruct> _TabDS)
+	{
+		m_Payments.push_back(CreateRef<Payment>(_TabDS));
+	}
+
+	void Electricity::EditPayment(size_t _PayId, Ref<const TabDataStruct> _TabDS)
+	{
+		m_Payments[_PayId]->Edit(_TabDS);
+	}
+
+	void Electricity::DeletePayment(size_t _PayId)
+	{
+		m_Payments.erase(m_Payments.begin() + _PayId);
 	}
 
 	nlohmann::basic_json<> Electricity::GetJson() const

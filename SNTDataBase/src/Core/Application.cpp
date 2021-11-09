@@ -59,7 +59,10 @@ namespace LM
 			[=]() { return m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetElectricity().GetPaymentsCount(); }
 		);
 
-		m_HomesteadTabsCollection = CreateRef<TabsCollection>(u8"Добавление участка", m_HomesteadsTable);
+		m_HomesteadTabsCollection				= CreateRef<TabsCollection>(u8"участка",	m_HomesteadsTable);
+		m_MembershipFeePaymentTabsCollection	= CreateRef<TabsCollection>(u8"платежа",	m_MembershipFeePaymentsTable);
+		m_ElectricityAccrualTabsCollection		= CreateRef<TabsCollection>(u8"начисления", m_ElectricityAccrualsTable);
+		m_ElectricityPaymentTabsCollection		= CreateRef<TabsCollection>(u8"платежа",	m_ElectricityPaymentsTable);
 	}
 
 	Application::~Application()
@@ -298,21 +301,13 @@ namespace LM
 		//opt_fitting_flags
 		if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
 		{
-			DrawHomestead();
+			DrawHomesteads();
+			DrawMembershipFeePayments();
+			DrawElectricityAccruals();
+			DrawElectricityPayments();
 
-			DrawMembershipFee();
-			DrawCreateMembershipFeePayment();
-			DrawEditMembershipFeePayment();
 			DrawMembershipFeeOpeningBalance();
 			DrawElectricityOpeningBalance();
-
-			DrawElectricity();
-			DrawCreateElectricity();
-			DrawEditElectricity();
-
-			DrawElectricityPayment();
-			DrawCreateElectricityPayment();
-			DrawEditElectricityPayment();
 
 			DrawDropEvent();
 
@@ -323,10 +318,30 @@ namespace LM
 			//}
 			//ImGui::End();
 
+
 			ImGui::EndTabBar();
 		}
 		ImGui::End();
 
+		if (ImGui::Begin("Accruals"))
+		{
+			if (ImGui::Button("Sort"))
+			{
+				std::sort(MembershipFee::s_Accrual.begin(), MembershipFee::s_Accrual.end(), [](const MembershipFeeAccrual& _First, const MembershipFeeAccrual& _Second)
+					{
+						return _First.m_Date < _Second.m_Date;
+					});
+			}
+			for (int i = 0; i < MembershipFee::s_Accrual.size(); i++)
+			{
+				ImGui::Text("%03d", i);
+				ImGui::SameLine();
+				MembershipFee::s_Accrual[i].m_Date.Draw();
+				ImGui::SameLine();
+				MembershipFee::s_Accrual[i].m_Money.Draw();
+			}
+			ImGui::End();
+		}
 	}
 
 	void Application::DrawRect(int colId, ColumnsInfo& column)
@@ -382,7 +397,7 @@ namespace LM
 		return isStringEdited;
 	}
 
-	void Application::DrawHomestead()
+	void Application::DrawHomesteads()
 	{
 		m_HomesteadTabsCollection->Draw();
 
@@ -438,19 +453,21 @@ namespace LM
 		}
 	}
 
-	void Application::DrawMembershipFee()
+	void Application::DrawMembershipFeePayments()
 	{
-		if (m_HomesteadsTable->GetSelectedId() == -1)
+		if (!m_HomesteadsTable->HasSelectedRow())
 			return;
+
+		m_MembershipFeePaymentTabsCollection->Draw();
 
 		if (ImGui::BeginTabItem(u8"Членские взносы"))
 		{
-			if (m_HomesteadsTable->GetSelectedId() == -1 || m_HomesteadsTable->GetSelectedId() >= m_DataBase->m_Homesteads.size())
-			{
-				ImGui::Text(u8"Участок не выбран!");
-				ImGui::EndTabItem();
-				return;
-			}
+			//if (!m_HomesteadsTable->HasSelectedRow())
+			//{
+			//	ImGui::Text(u8"Участок не выбран!");
+			//	ImGui::EndTabItem();
+			//	return;
+			//}
 
 			DrawCheckMembershipAccrual();
 
@@ -471,222 +488,49 @@ namespace LM
 				ImGui::Text(u8"Долг на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
 				Amount.DrawAbs();
 			}
+
 			if (ImGui::Button(u8"Добавить платеж"))
 			{
-				if (!EditMembershipFeePayment.Create)
-				{
-					CreateMembershipFeePayment.CreateNewIntermediate();
-				}
-			} ImGui::SameLine();
-			if (ImGui::Button(u8"Редактировать платеж"))
+				m_MembershipFeePaymentTabsCollection->SetCreate
+				(
+					[=](Ref<const TabDataStruct> _TabDS) { m_DataBase->AddMembershipFeePayment(m_HomesteadsTable->GetSelectedId(), _TabDS); },
+					CreateRef<PaymentTabDS>()
+				);
+			} 
+			ImGui::SameLine();
+			if (ImGui::Button(u8"Редактировать платеж") && m_MembershipFeePaymentsTable->HasSelectedRow())
 			{
-				if (!CreateMembershipFeePayment.Create)
-				{
-					if (m_MembershipFeePaymentsTable->GetSelectedId() != -1 && m_MembershipFeePaymentsTable->GetSelectedId() < m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().m_Payments.size())
-						EditMembershipFeePayment.CreateNewIntermediate(m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments[m_MembershipFeePaymentsTable->GetSelectedId()].get());
-				}
-			} ImGui::SameLine();
+				m_MembershipFeePaymentTabsCollection->SetEdit
+				(
+					[=](Ref<const TabDataStruct> _TabDS) 
+					{	
+						m_DataBase->EditMembershipFeePayment(m_HomesteadsTable->GetSelectedId(), m_MembershipFeePaymentsTable->GetSelectedId(), _TabDS); 
+					},
+					m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().GetPayment(m_MembershipFeePaymentsTable->GetSelectedId())
+				);
+			} 
+			ImGui::SameLine();
 			if (ImGui::Button(u8"Проверка начислений"))
 			{
 				m_OpenedMembershipAccrual = true;
 			}
-			if (!EditMembershipFeePayment.Create)
+			if (m_IsEdit)
 			{
-				DrawDeleteMembershipFeePayment();
+				ImGui::SameLine();
+				m_MembershipFeePaymentTabsCollection->DrawDeleteButton
+				(
+					u8"Удалить платеж",
+					[=]()
+					{
+						m_DataBase->DeleteMembershipFeePayment(m_HomesteadsTable->GetSelectedId(), m_MembershipFeePaymentsTable->GetSelectedId());
+					},
+					m_MembershipFeePaymentsTable->HasSelectedRow()
+				);
 			}
 
 			m_MembershipFeePaymentsTable->Draw();
 
 			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawCreateMembershipFeePayment()
-	{
-		std::string TabName = u8"Добавление платежа##Членские взносы";
-		auto CreateWin = &CreateMembershipFeePayment;
-
-		if (CreateWin->Create && ImGui::BeginTabItem(TabName.c_str(), NULL, ImGuiTabItemFlags_SetSelected))
-		{
-			Payment& payment = CreateWin->Intermediate;
-
-			payment.m_Date.DrawEdit();
-
-			payment.m_Amount.DrawEdit(u8"Сумма платежа");
-
-			ImGui::PushItemWidth(250);
-			ImGui::Combo(u8"Форма платежа", &payment.m_FormOfPayment, payment.s_FormOfPaymentString.data(), payment.s_FormOfPaymentString.size());
-			ImGui::PopItemWidth();
-
-			InputTextString(u8"Номер платежа", payment.m_DocumentNumber, 250);
-
-			if (ImGui::Button(u8"Добавить", ImVec2(120, 0)))
-			{
-				CreateWin->SelectedHomestead->m_MembershipFee.m_Payments.push_back(CreateRef<Payment>(CreateWin->Intermediate));
-				CreateWin->Create = false;
-				CreateWin->SelectedHomestead->m_MembershipFee.m_Debt -= CreateWin->Intermediate.m_Amount;
-				CreateWin->SelectedHomestead->m_MembershipFee.SortPayments();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Отменить", ImVec2(120, 0)))
-			{
-				ImGui::OpenPopup(std::string(u8"Удалить?##" + TabName).c_str());
-			}
-
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_size = ImVec2(400, 150);
-			ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-			ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-			ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowSize(window_size);
-			//ImGui::SetNextWindowPos();
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::BeginPopupModal(std::string(u8"Удалить?##" + TabName).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::Text(u8"Все данные будут удалены \nбез возможности восстановления!\n\n\n\n");
-				ImGui::Separator();
-
-				if (ImGui::Button("OK", ImVec2(120, 0)))
-				{
-					CreateWin->Create = false;
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
-				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
-
-
-			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawEditMembershipFeePayment()
-	{
-		std::string TabName = u8"Редактированние Платежа##Членские взносы";
-		auto EditWin = &EditMembershipFeePayment;
-
-		if ((EditWin->Create || EditWin->Dirty) && ImGui::BeginTabItem(TabName.c_str(), NULL, ImGuiTabItemFlags_SetSelected))
-		{
-			Payment& payment = EditWin->Intermediate;
-
-			if (payment.m_Date.DrawEdit())
-				EditWin->Dirty = true;
-
-			if (payment.m_Amount.DrawEdit(u8"Сумма платежа"))
-				EditWin->Dirty = true;
-
-			ImGui::PushItemWidth(250);
-			if (ImGui::Combo(u8"Форма платежа", &payment.m_FormOfPayment, payment.s_FormOfPaymentString.data(), payment.s_FormOfPaymentString.size()))
-				EditWin->Dirty = true;
-			ImGui::PopItemWidth();
-
-			if (InputTextString(u8"Номер платежа", payment.m_DocumentNumber, 250))
-				EditWin->Dirty = true;
-
-
-
-			if (ImGui::Button(u8"Изменить", ImVec2(120, 0)))
-			{
-				EditWin->SelectedHomestead->m_MembershipFee.m_Debt += EditWin->Editable->m_Amount;
-				*EditWin->Editable = EditWin->Intermediate;
-				EditWin->SelectedHomestead->m_MembershipFee.m_Debt -= EditWin->Editable->m_Amount;
-				EditWin->Create = false;
-				EditWin->Dirty = false;
-				EditWin->SelectedHomestead->m_MembershipFee.SortPayments();
-			} ImGui::SameLine();
-			if (ImGui::Button(u8"Отменить", ImVec2(120, 0)))
-			{
-				if (EditWin->Dirty)
-					ImGui::OpenPopup(std::string(u8"Отменить?##" + TabName).c_str());
-				else
-					EditWin->Create = false;
-			} ImGui::SameLine();
-			//if (ImGui::Button(u8"Применить", ImVec2(120, 0)))
-			//{
-			//	EditWin->SelectedHomestead->m_MembershipFee.m_Debt += EditWin->Editable->m_Amount;
-			//	*EditWin->Editable = EditWin->Intermediate;
-			//	EditWin->SelectedHomestead->m_MembershipFee.m_Debt -= EditWin->Editable->m_Amount;
-			//	EditWin->Dirty = false;
-			//	EditWin->SelectedHomestead->m_MembershipFee.SortPayments();
-			//}
-
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_size = ImVec2(400, 150);
-			ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-			ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-			ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowSize(window_size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::BeginPopupModal(std::string(u8"Отменить?##" + TabName).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::Text(u8"Все изменения будут отменены \nбез возможности восстановления!\n\n\n\n");
-				ImGui::Separator();
-
-				if (ImGui::Button("OK", ImVec2(120, 0)))
-				{
-					EditWin->Create = false;
-					EditWin->Dirty = false;
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
-				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
-
-			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawDeleteMembershipFeePayment()
-	{
-		std::string Name = u8"платеж##Членские взносы";
-		auto& dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Payments;
-		int selected = m_MembershipFeePaymentsTable->GetSelectedId();
-
-		if (m_IsEdit)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button(std::string(u8"Удалить " + Name).c_str()))
-			{
-				if (selected != -1 && selected < dataArray.size())
-				{
-					ImGui::OpenPopup(std::string(u8"Удалить?##" + Name).c_str());
-				}
-			}
-		}
-
-		if (ImGui::BeginPopupModal(std::string(u8"Удалить?##" + Name).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-		{
-			ImGui::Text(u8"УДАЛЕНИЕ без возможности восстановления!\n\n\n\n\n");
-			ImGui::Separator();
-
-			if (ImGui::Button(u8"Удалить", ImVec2(120, 0)))
-			{
-				CreateBackup();
-				m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_MembershipFee.m_Debt += dataArray[selected]->m_Amount;
-				dataArray.erase(dataArray.begin() + selected);
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndPopup();
 		}
 	}
 
@@ -765,7 +609,7 @@ namespace LM
 
 	void Application::DrawCheckMembershipAccrual()
 	{
-		static std::vector<Accrual> accruals;
+		static std::vector<MembershipFeeAccrual> accruals;
 		static std::vector<int> AccrualsToDelete;
 		if (m_OpenedMembershipAccrual)
 		{
@@ -814,10 +658,10 @@ namespace LM
 					}
 					if (!founded)
 					{
-						accruals.push_back(Accrual());
+						accruals.push_back(MembershipFeeAccrual());
 						accruals.back().m_Date.m_Month = TestMonth;
 						accruals.back().m_Date.m_Year = TestYear;
-						accruals.back().m_Money = Accrual::MembershipFeeAmount;
+						accruals.back().m_Money = MembershipFeeAccrual::MembershipFeeAmount;
 						//std::cout << accruals.back().m_Money.m_Amount << std::endl;
 					}
 				}
@@ -844,8 +688,8 @@ namespace LM
 
 			std::sort(AccrualsToDelete.begin(), AccrualsToDelete.end(), [](const int& first, const int& second)
 				{
-					Accrual& ac1 = MembershipFee::s_Accrual[first];
-					Accrual& ac2 = MembershipFee::s_Accrual[second];
+					MembershipFeeAccrual& ac1 = MembershipFee::s_Accrual[first];
+					MembershipFeeAccrual& ac2 = MembershipFee::s_Accrual[second];
 
 					return ac1.m_Date < ac2.m_Date;
 				});
@@ -873,7 +717,7 @@ namespace LM
 			ImGui::BeginChild("ChildNew", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 300), true);
 			for (int i = 0; i < accruals.size(); i++)
 			{
-				Accrual& accrual = accruals[i];
+				MembershipFeeAccrual& accrual = accruals[i];
 				ImGui::PushID(i);
 				accrual.m_Date.Draw();
 				ImGui::SameLine();
@@ -900,7 +744,7 @@ namespace LM
 			ImGui::BeginChild("ChildDel", ImVec2(0, 300), true);
 			for (int i = 0; i < AccrualsToDelete.size(); i++)
 			{
-				Accrual& accrual = MembershipFee::s_Accrual[AccrualsToDelete[i]];
+				MembershipFeeAccrual& accrual = MembershipFee::s_Accrual[AccrualsToDelete[i]];
 				ImGui::PushID(i);
 				accrual.m_Date.Draw();
 				ImGui::SameLine();
@@ -929,8 +773,8 @@ namespace LM
 
 					std::sort(AccrualsToDelete.begin(), AccrualsToDelete.end(), [](const int& first, const int& second)
 						{
-							Accrual& ac1 = MembershipFee::s_Accrual[first];
-							Accrual& ac2 = MembershipFee::s_Accrual[second];
+							MembershipFeeAccrual& ac1 = MembershipFee::s_Accrual[first];
+							MembershipFeeAccrual& ac2 = MembershipFee::s_Accrual[second];
 
 							return ac1.m_Date < ac2.m_Date;
 						});
@@ -950,19 +794,21 @@ namespace LM
 		}
 	}
 
-	void Application::DrawElectricity()
+	void Application::DrawElectricityAccruals()
 	{
 		if (m_HomesteadsTable->GetSelectedId() == -1)
 			return;
 
+		m_ElectricityAccrualTabsCollection->Draw();
+
 		if (ImGui::BeginTabItem(u8"Начисление электроэнергии"))
 		{
-			if (m_HomesteadsTable->GetSelectedId() == -1 || m_HomesteadsTable->GetSelectedId() >= m_DataBase->m_Homesteads.size())
-			{
-				ImGui::Text(u8"Участок не выбран!");
-				ImGui::EndTabItem();
-				return;
-			}
+			//if (!m_HomesteadsTable->HasSelectedRow())
+			//{
+			//	ImGui::Text(u8"Участок не выбран!");
+			//	ImGui::EndTabItem();
+			//	return;
+			//}
 
 			ImGui::TextUnformatted(u8"Первое начисление является начальным сальдо!");
 
@@ -970,22 +816,36 @@ namespace LM
 
 			if (ImGui::Button(u8"Добавить начисление"))
 			{
-				if (!EditElectricityAccrual.Create)
-				{
-					CreateElectricityAccrual.CreateNewIntermediate();
-				}
-			} ImGui::SameLine();
-			if (ImGui::Button(u8"Редактировать начисление"))
+				m_ElectricityAccrualTabsCollection->SetCreate
+				(
+					[=](Ref<const TabDataStruct> _TabDS) { m_DataBase->AddElectricityAccrual(m_HomesteadsTable->GetSelectedId(), _TabDS); },
+					CreateRef<ElectricityAccrualTabDS>()
+				);
+			} 
+			ImGui::SameLine();
+			if (ImGui::Button(u8"Редактировать начисление") && m_ElectricityAccrualsTable->HasSelectedRow())
 			{
-				if (!CreateElectricityAccrual.Create)
-				{
-					if (m_ElectricityAccrualsTable->GetSelectedId() != -1 && m_ElectricityAccrualsTable->GetSelectedId() < homestead->m_Electricity.m_Accruals.size())
-						EditElectricityAccrual.CreateNewIntermediate(homestead->m_Electricity.m_Accruals[m_ElectricityAccrualsTable->GetSelectedId()].get());
-				}
+				m_ElectricityAccrualTabsCollection->SetEdit
+				(
+					[=](Ref<const TabDataStruct> _TabDS)
+					{
+						m_DataBase->EditElectricityAccrual(m_HomesteadsTable->GetSelectedId(), m_ElectricityAccrualsTable->GetSelectedId(), _TabDS);
+					},
+					m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetElectricity().GetAccrual(m_ElectricityAccrualsTable->GetSelectedId())
+				);
 			}
-			if (!EditElectricityAccrual.Create)
+			if (m_IsEdit)
 			{
-				DrawDeleteElectricity();
+				ImGui::SameLine();
+				m_ElectricityAccrualTabsCollection->DrawDeleteButton
+				(
+					u8"Удалить начисление",
+					[=]()
+					{
+						m_DataBase->DeleteElectricityAccrual(m_HomesteadsTable->GetSelectedId(), m_ElectricityAccrualsTable->GetSelectedId());
+					},
+					m_ElectricityAccrualsTable->HasSelectedRow()
+				);
 			}
 
 			m_ElectricityAccrualsTable->Draw();
@@ -994,269 +854,77 @@ namespace LM
 		}
 	}
 
-	void Application::DrawCreateElectricity()
+	void Application::DrawElectricityPayments()
 	{
-		std::string TabName = u8"Добавление начисления электроэнергии";
-		auto CreateWin = &CreateElectricityAccrual;
+		if (m_HomesteadsTable->GetSelectedId() == -1)
+			return;
 
-		if (CreateWin->Create && ImGui::BeginTabItem(TabName.c_str(), NULL, ImGuiTabItemFlags_SetSelected))
+		m_ElectricityPaymentTabsCollection->Draw();
+
+		if (ImGui::BeginTabItem(u8"Оплата электроэнергии"))
 		{
-			ElectricityAccrual& electricityAccrual = CreateWin->Intermediate;
+			//if (!m_HomesteadsTable->HasSelectedRow())
+			//{
+			//	ImGui::Text(u8"Участок не выбран!");
+			//	ImGui::EndTabItem();
+			//	return;
+			//}
 
-			electricityAccrual.m_Date.DrawEdit();
+			Homestead& homestead = *m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
 
-			electricityAccrual.m_Day.DrawEdit(u8"Дневные начисления");
-			electricityAccrual.m_Night.DrawEdit(u8"Ночные начисления");
-			ImGui::PushItemWidth(250);
-			ImGui::Text("%lld.%03lld", electricityAccrual.GetAllMonth().m_Watt / 1000, electricityAccrual.GetAllMonth().m_Watt % 1000);
-			ImGui::PopItemWidth();
+			time_t t;
+			struct tm* t_m;
+			t = time(NULL);
+			t_m = localtime(&t);
+
+			Money& Amount = homestead.m_Electricity.m_All;
+			if (Amount < 0)
+			{
+				ImGui::Text(u8"Переплата на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
+				Amount.DrawAbs();
+			}
+			else
+			{
+				ImGui::Text(u8"Долг на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
+				Amount.DrawAbs();
+			}
+			if (ImGui::Button(u8"Добавить платеж"))
+			{
+				m_ElectricityPaymentTabsCollection->SetCreate
+				(
+					[=](Ref<const TabDataStruct> _TabDS) { m_DataBase->AddElectricityPayment(m_HomesteadsTable->GetSelectedId(), _TabDS); },
+					CreateRef<PaymentTabDS>()
+				);
+			} 
 			ImGui::SameLine();
-			ImGui::Text(u8"Обшее начисление");
-
-			electricityAccrual.m_Costs.m_Day.DrawEdit(u8"Дневной тариф");
-			electricityAccrual.m_Costs.m_Night.DrawEdit(u8"Ночной тариф");
-			for (int i = 0; i < electricityAccrual.m_Costs.m_Others.size(); i++)
+			if (ImGui::Button(u8"Редактировать платеж") && m_ElectricityPaymentsTable->HasSelectedRow())
 			{
-				ImGui::PushID(i);
-				ImGui::Separator();
-				auto& [name, money] = electricityAccrual.m_Costs.m_Others[i];
-				money.DrawEdit("##Sum"); ImGui::SameLine();
-				//ImGui::Text(name.c_str());
-				InputTextString("##Name", name, 250);
-				if (ImGui::Button(u8"Удалить константку"))
-				{
-					electricityAccrual.m_Costs.m_Others.erase(electricityAccrual.m_Costs.m_Others.begin() + i);
-					i--;
-				}
-				ImGui::PopID();
+				m_ElectricityPaymentTabsCollection->SetEdit
+				(
+					[=](Ref<const TabDataStruct> _TabDS)
+					{
+						m_DataBase->EditElectricityPayment(m_HomesteadsTable->GetSelectedId(), m_ElectricityPaymentsTable->GetSelectedId(), _TabDS);
+					},
+					m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetElectricity().GetPayment(m_ElectricityPaymentsTable->GetSelectedId())
+				);
 			}
-			ImGui::Separator();
-			if (ImGui::Button(u8"Добавить константу"))
+			if (m_IsEdit)
 			{
-				electricityAccrual.m_Costs.m_Others.push_back({ "<NONE>", Money() });
-			}
-
-			if (ImGui::Button(u8"Добавить", ImVec2(120, 0)))
-			{
-				CreateWin->SelectedHomestead->m_Electricity.m_Accruals.push_back(CreateRef<ElectricityAccrual>(CreateWin->Intermediate));
-				CreateWin->Create = false;
-				CreateWin->SelectedHomestead->m_Electricity.Recalculate(CreateWin->SelectedHomestead->m_Data.m_HasBenefits);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Отменить", ImVec2(120, 0)))
-			{
-				ImGui::OpenPopup(std::string(u8"Удалить?##" + TabName).c_str());
-			}
-
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_size = ImVec2(400, 150);
-			ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-			ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-			ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowSize(window_size);
-			//ImGui::SetNextWindowPos();
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::BeginPopupModal(std::string(u8"Удалить?##" + TabName).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::Text(u8"Все данные будут удалены \nбез возможности восстановления!\n\n\n\n");
-				ImGui::Separator();
-
-				if (ImGui::Button("OK", ImVec2(120, 0)))
-				{
-					CreateWin->Create = false;
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
 				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
+				m_ElectricityPaymentTabsCollection->DrawDeleteButton
+				(
+					u8"Удалить платеж",
+					[=]()
+					{
+						m_DataBase->DeleteElectricityPayment(m_HomesteadsTable->GetSelectedId(), m_ElectricityPaymentsTable->GetSelectedId());
+					},
+					m_ElectricityPaymentsTable->HasSelectedRow()
+				);
 			}
+
+			m_ElectricityPaymentsTable->Draw();
 
 			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawEditElectricity()
-	{
-		std::string TabName = u8"Редактирование начисления электроэнергии";
-		auto EditWin = &EditElectricityAccrual;
-
-		if ((EditWin->Create || EditWin->Dirty) && ImGui::BeginTabItem(TabName.c_str(), NULL, ImGuiTabItemFlags_SetSelected))
-		{
-
-			ElectricityAccrual& electricityAccrual = EditWin->Intermediate;
-
-			//ImGui::Text(u8"Год"); ImGui::SameLine();
-			//ImGui::PushItemWidth(100);
-			//if (ImGui::InputInt(u8"##Год", &electricityAccrual.m_Date.Year))
-			//{
-			//	electricityAccrual.m_Date.FixDate();
-			//	EditWin->Dirty = true;
-			//}
-			//ImGui::SameLine();
-			//ImGui::PopItemWidth();
-			//
-			//ImGui::Text(u8"Месяц"); ImGui::SameLine();
-			//ImGui::PushItemWidth(80);
-			//if (ImGui::InputInt(u8"##Месяц", &payment.m_Date.Month))
-			//{
-			//	payment.m_Date.FixDate();
-			//	EditWin->Dirty = true;
-			//}
-			//ImGui::SameLine();
-			//
-			//ImGui::Text(u8"День"); ImGui::SameLine();
-			//if (ImGui::InputInt(u8"##День", &payment.m_Date.Day))
-			//{
-			//	payment.m_Date.FixDate();
-			//	EditWin->Dirty = true;
-			//}
-			//ImGui::PopItemWidth();
-
-			if (electricityAccrual.m_Date.DrawEdit())
-				EditWin->Dirty = true;
-
-			if (electricityAccrual.m_Day.DrawEdit(u8"Дневные начисления"))
-				EditWin->Dirty = true;
-			if (electricityAccrual.m_Night.DrawEdit(u8"Ночные начисления"))
-				EditWin->Dirty = true;
-
-			ImGui::PushItemWidth(250);
-			ImGui::Text("%lld.%03lld", electricityAccrual.GetAllMonth().m_Watt / 1000, electricityAccrual.GetAllMonth().m_Watt % 1000);
-			ImGui::PopItemWidth();
-			ImGui::SameLine();
-			ImGui::Text(u8"Обшее начисление");
-
-			if (electricityAccrual.m_Costs.m_Day.DrawEdit(u8"Дневной тариф"))
-				EditWin->Dirty = true;
-			if (electricityAccrual.m_Costs.m_Night.DrawEdit(u8"Ночной тариф"))
-				EditWin->Dirty = true;
-			for (int i = 0; i < electricityAccrual.m_Costs.m_Others.size(); i++)
-			{
-				ImGui::PushID(i);
-				ImGui::Separator();
-				auto& [name, money] = electricityAccrual.m_Costs.m_Others[i];
-
-				if (money.DrawEdit("##Sum"))
-					EditWin->Dirty = true;
-				ImGui::SameLine();
-
-				//ImGui::Text(name.c_str());
-				if (InputTextString("##Name", name, 250))
-					EditWin->Dirty = true;
-
-				if (ImGui::Button(u8"Удалить константку"))
-				{
-					electricityAccrual.m_Costs.m_Others.erase(electricityAccrual.m_Costs.m_Others.begin() + i);
-					i--;
-					EditWin->Dirty = true;
-				}
-				ImGui::PopID();
-			}
-			ImGui::Separator();
-			if (ImGui::Button(u8"Добавить константу"))
-			{
-				electricityAccrual.m_Costs.m_Others.push_back({ "<NONE>", Money() });
-				EditWin->Dirty = true;
-			}
-
-			if (ImGui::Button(u8"Изменить", ImVec2(120, 0)))
-			{
-				*EditWin->Editable = EditWin->Intermediate;
-				EditWin->SelectedHomestead->m_Electricity.Recalculate(EditWin->SelectedHomestead->m_Data.m_HasBenefits);
-				EditWin->Create = false;
-				EditWin->Dirty = false;
-			} ImGui::SameLine();
-			if (ImGui::Button(u8"Отменить", ImVec2(120, 0)))
-			{
-				if (EditWin->Dirty)
-					ImGui::OpenPopup(std::string(u8"Отменить?##" + TabName).c_str());
-				else
-					EditWin->Create = false;
-			} ImGui::SameLine();
-			//if (ImGui::Button(u8"Применить", ImVec2(120, 0)))
-			//{
-			//	*EditWin->Editable = EditWin->Intermediate;
-			//	EditWin->SelectedHomestead->m_Electricity.Recalculate();
-			//	EditWin->Dirty = false;
-			//}
-
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_size = ImVec2(400, 150);
-			ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-			ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-			ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowSize(window_size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::BeginPopupModal(std::string(u8"Отменить?##" + TabName).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::Text(u8"Все изменения будут отменены \nбез возможности восстановления!\n\n\n\n");
-				ImGui::Separator();
-
-				if (ImGui::Button("OK", ImVec2(120, 0)))
-				{
-					EditWin->Create = false;
-					EditWin->Dirty = false;
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
-				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
-
-			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawDeleteElectricity()
-	{
-		std::string Name = u8"начисление##Начисление электроэнергии";
-		auto& dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.m_Accruals;
-		int selected = m_ElectricityAccrualsTable->GetSelectedId();
-
-		if (m_IsEdit)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button(std::string(u8"Удалить " + Name).c_str()))
-			{
-				if (selected != -1 && selected < dataArray.size())
-				{
-					ImGui::OpenPopup(std::string(u8"Удалить?##" + Name).c_str());
-
-				}
-			}
-		}
-
-		if (ImGui::BeginPopupModal(std::string(u8"Удалить?##" + Name).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-		{
-			ImGui::Text(u8"УДАЛЕНИЕ без возможности восстановления!\n\n\n\n\n");
-			ImGui::Separator();
-
-			if (ImGui::Button(u8"Удалить", ImVec2(120, 0)))
-			{
-				CreateBackup();
-				dataArray.erase(dataArray.begin() + selected);
-				m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.Recalculate(m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Data.m_HasBenefits);
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndPopup();
 		}
 	}
 
@@ -1264,7 +932,7 @@ namespace LM
 	{
 		for (auto& homestead : m_DataBase->m_Homesteads)
 		{
-			homestead->m_Electricity.Recalculate(homestead->m_Data.m_HasBenefits);
+			homestead->m_Electricity.Recalculate(homestead->m_Data.ElectricityPrivilege.HasPrivilege);
 		}
 	}
 
@@ -1284,9 +952,9 @@ namespace LM
 						for (auto& accrualInfo : m_DropInfoAccruals)
 						{
 							auto& [name, accrual] = accrualInfo;
-							if (homestead->m_Data.m_Number == name)
+							if (homestead->m_Data.Number == name)
 							{
-								accrual.m_Costs = m_ElectricityAccrualCostsIntermediate;
+								accrual.m_Data.Costs = m_ElectricityAccrualCostsIntermediate;
 								homestead->m_Electricity.m_Accruals.push_back(CreateRef<ElectricityAccrual>(accrual));
 								break;
 							}
@@ -1360,7 +1028,7 @@ namespace LM
 					//////// 1 /////////////////////////////////////////////////////////////
 					////////////////////////////////////////////////////////////////////////
 					//ImGui::Text("%02d.%02d.%d", accrual.m_Date.Day, accrual.m_Date.Month, accrual.m_Date.Year);
-					accrual.m_Date.Draw();
+					accrual.m_Data.Date.Draw();
 					ImGui::NextColumn();
 
 					ImGui::Text(number.c_str());
@@ -1369,13 +1037,13 @@ namespace LM
 					////////////////////////////////////////////////////////////////////////
 					//////// 2 /////////////////////////////////////////////////////////////
 					////////////////////////////////////////////////////////////////////////
-					ImGui::Text("%lld.%03lld", accrual.m_Day.m_Watt / 1000, accrual.m_Day.m_Watt % 1000);
+					accrual.m_Data.Day.Draw();
 					ImGui::NextColumn();
 
 					////////////////////////////////////////////////////////////////////////
 					//////// 3 /////////////////////////////////////////////////////////////
 					////////////////////////////////////////////////////////////////////////
-					ImGui::Text("%lld.%03lld", accrual.m_Night.m_Watt / 1000, accrual.m_Night.m_Watt % 1000);
+					accrual.m_Data.Night.Draw();
 					ImGui::NextColumn();
 
 					////////////////////////////////////////////////////////////////////////
@@ -1390,250 +1058,6 @@ namespace LM
 				ImGui::EndChild();
 				ImGui::EndTabItem();
 			}
-		}
-	}
-
-	void Application::DrawElectricityPayment()
-	{
-		if (m_HomesteadsTable->GetSelectedId() == -1)
-			return;
-
-		if (ImGui::BeginTabItem(u8"Оплата электроэнергии"))
-		{
-			if (m_HomesteadsTable->GetSelectedId() == -1 || m_HomesteadsTable->GetSelectedId() >= m_DataBase->m_Homesteads.size())
-			{
-				ImGui::Text(u8"Участок не выбран!");
-				ImGui::EndTabItem();
-				return;
-			}
-
-			Homestead& homestead = *m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
-
-			time_t t;
-			struct tm* t_m;
-			t = time(NULL);
-			t_m = localtime(&t);
-
-			Money& Amount = homestead.m_Electricity.m_All;
-			if (Amount < 0)
-			{
-				ImGui::Text(u8"Переплата на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
-				Amount.DrawAbs();
-			}
-			else
-			{
-				ImGui::Text(u8"Долг на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
-				Amount.DrawAbs();
-			}
-			if (ImGui::Button(u8"Добавить платеж"))
-			{
-				if (!EditElectricityPayment.Create)
-				{
-					CreateElectricityPayment.CreateNewIntermediate();
-				}
-			} ImGui::SameLine();
-			if (ImGui::Button(u8"Редактировать платеж"))
-			{
-				if (!CreateElectricityPayment.Create)
-				{
-					if (m_ElectricityPaymentsTable->GetSelectedId() != -1 && m_ElectricityPaymentsTable->GetSelectedId() < homestead.m_Electricity.m_Payments.size())
-						EditElectricityPayment.CreateNewIntermediate(homestead.m_Electricity.m_Payments[m_ElectricityPaymentsTable->GetSelectedId()].get());
-				}
-			}
-			if (!EditElectricityPayment.Create)
-			{
-				DrawDeleteElectricityPayment();
-			}
-
-			m_ElectricityPaymentsTable->Draw();
-
-			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawEditElectricityPayment()
-	{
-		std::string TabName = u8"Редактированние Платежа##Электроэнергия";
-		auto EditWin = &EditElectricityPayment;
-
-		if ((EditWin->Create || EditWin->Dirty) && ImGui::BeginTabItem(TabName.c_str(), NULL, ImGuiTabItemFlags_SetSelected))
-		{
-			Payment& payment = EditWin->Intermediate;
-
-			if (payment.m_Date.DrawEdit())
-				EditWin->Dirty = true;
-
-			if (payment.m_Amount.DrawEdit(u8"Сумма платежа"))
-				EditWin->Dirty = true;
-
-			ImGui::PushItemWidth(250);
-			if (ImGui::Combo(u8"Форма платежа", &payment.m_FormOfPayment, payment.s_FormOfPaymentString.data(), payment.s_FormOfPaymentString.size()))
-				EditWin->Dirty = true;
-			ImGui::PopItemWidth();
-
-			if (InputTextString(u8"Номер платежа", payment.m_DocumentNumber, 250))
-				EditWin->Dirty = true;
-
-			if (ImGui::Button(u8"Изменить", ImVec2(120, 0)))
-			{
-				EditWin->SelectedHomestead->m_Electricity.m_All += EditWin->Editable->m_Amount;
-				*EditWin->Editable = EditWin->Intermediate;
-				EditWin->SelectedHomestead->m_Electricity.m_All -= EditWin->Editable->m_Amount;
-				EditWin->Create = false;
-				EditWin->Dirty = false;
-				EditWin->SelectedHomestead->m_Electricity.SortPayments();
-			} ImGui::SameLine();
-			if (ImGui::Button(u8"Отменить", ImVec2(120, 0)))
-			{
-				if (EditWin->Dirty)
-					ImGui::OpenPopup(std::string(u8"Отменить?##" + TabName).c_str());
-				else
-					EditWin->Create = false;
-			} ImGui::SameLine();
-			//if (ImGui::Button(u8"Применить", ImVec2(120, 0)))
-			//{
-			//	EditWin->SelectedHomestead->m_Electricity.m_All += EditWin->Editable->m_Amount;
-			//	*EditWin->Editable = EditWin->Intermediate;
-			//	EditWin->SelectedHomestead->m_Electricity.m_All -= EditWin->Editable->m_Amount;
-			//	EditWin->Dirty = false;
-			//	EditWin->SelectedHomestead->m_Electricity.SortPayments();
-			//}
-
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_size = ImVec2(400, 150);
-			ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-			ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-			ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowSize(window_size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::BeginPopupModal(std::string(u8"Отменить?##" + TabName).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::Text(u8"Все изменения будут отменены \nбез возможности восстановления!\n\n\n\n");
-				ImGui::Separator();
-
-				if (ImGui::Button("OK", ImVec2(120, 0)))
-				{
-					EditWin->Create = false;
-					EditWin->Dirty = false;
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
-				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
-
-			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawCreateElectricityPayment()
-	{
-		std::string TabName = u8"Добавление платежа##Электроэнергия";
-		auto CreateWin = &CreateElectricityPayment;
-
-		if (CreateWin->Create && ImGui::BeginTabItem(TabName.c_str(), NULL, ImGuiTabItemFlags_SetSelected))
-		{
-			Payment& payment = CreateWin->Intermediate;
-
-			payment.m_Date.DrawEdit();
-
-			payment.m_Amount.DrawEdit(u8"Сумма платежа");
-
-			ImGui::PushItemWidth(250);
-			ImGui::Combo(u8"Форма платежа", &payment.m_FormOfPayment, payment.s_FormOfPaymentString.data(), payment.s_FormOfPaymentString.size());
-			ImGui::PopItemWidth();
-
-			InputTextString(u8"Номер платежа", payment.m_DocumentNumber, 250);
-
-			if (ImGui::Button(u8"Добавить", ImVec2(120, 0)))
-			{
-				CreateWin->SelectedHomestead->m_Electricity.m_Payments.push_back(CreateRef<Payment>(CreateWin->Intermediate));
-				CreateWin->Create = false;
-				CreateWin->SelectedHomestead->m_Electricity.m_All -= CreateWin->Intermediate.m_Amount;
-				CreateWin->SelectedHomestead->m_Electricity.SortPayments();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Отменить", ImVec2(120, 0)))
-			{
-				ImGui::OpenPopup(std::string(u8"Удалить?##" + TabName).c_str());
-			}
-
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_size = ImVec2(400, 150);
-			ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-			ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-			ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowSize(window_size);
-			//ImGui::SetNextWindowPos();
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::BeginPopupModal(std::string(u8"Удалить?##" + TabName).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::Text(u8"Все данные будут удалены \nбез возможности восстановления!\n\n\n\n");
-				ImGui::Separator();
-
-				if (ImGui::Button("OK", ImVec2(120, 0)))
-				{
-					CreateWin->Create = false;
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
-				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-				{
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
-
-			ImGui::EndTabItem();
-		}
-	}
-
-	void Application::DrawDeleteElectricityPayment()
-	{
-		std::string Name = u8"платеж##Электроэнергия";
-		auto& dataArray = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.m_Payments;
-		int selected = m_ElectricityPaymentsTable->GetSelectedId();
-
-		if (m_IsEdit)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button(std::string(u8"Удалить " + Name).c_str()))
-			{
-				if (selected != -1 && selected < dataArray.size())
-				{
-					ImGui::OpenPopup(std::string(u8"Удалить?##" + Name).c_str());
-				}
-			}
-		}
-
-		if (ImGui::BeginPopupModal(std::string(u8"Удалить?##" + Name).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
-		{
-			ImGui::Text(u8"УДАЛЕНИЕ без возможности восстановления!\n\n\n\n\n");
-			ImGui::Separator();
-
-			if (ImGui::Button(u8"Удалить", ImVec2(120, 0)))
-			{
-				CreateBackup();
-				m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()]->m_Electricity.m_All += dataArray[selected]->m_Amount;
-				dataArray.erase(dataArray.begin() + selected);
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button(u8"Отмена", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndPopup();
 		}
 	}
 
@@ -1705,14 +1129,14 @@ namespace LM
 			auto& accruals = homestead->m_Electricity.m_Accruals;
 			auto& accrualBack = accruals.back();
 			auto& accrualPrev = accruals[accruals.size() - 2];
-			fout << homestead->m_Data.m_Number << SepCSV;
+			fout << homestead->m_Data.Number << SepCSV;
 			fout << accrualBack->GetAllMonth() << SepCSV;
-			fout << accrualBack->m_Day << SepCSV;
-			fout << accrualBack->m_Night << SepCSV;
+			fout << accrualBack->m_Data.Day << SepCSV;
+			fout << accrualBack->m_Data.Night << SepCSV;
 
 			// Разница показаний кВт
-			KiloWatt dayKW = accrualBack->m_Day - accrualPrev->m_Day;
-			KiloWatt nightKW = accrualBack->m_Night - accrualPrev->m_Night;
+			KiloWatt dayKW = accrualBack->m_Data.Day - accrualPrev->m_Data.Day;
+			KiloWatt nightKW = accrualBack->m_Data.Night - accrualPrev->m_Data.Night;
 			KiloWatt monthKW = dayKW + nightKW;
 
 			fout << monthKW << SepCSV;
@@ -1721,8 +1145,8 @@ namespace LM
 
 			// Начислено РУБ
 			Money fullSum;
-			Money calcDay = Electricity::CalcMonthMoney(dayKW.m_Watt, accrualBack->m_Costs.m_Day);
-			Money calcNight = Electricity::CalcMonthMoney(nightKW.m_Watt, accrualBack->m_Costs.m_Night);
+			Money calcDay = Electricity::CalcMonthMoney(dayKW.m_Watt, accrualBack->m_Data.Costs.m_Day);
+			Money calcNight = Electricity::CalcMonthMoney(nightKW.m_Watt, accrualBack->m_Data.Costs.m_Night);
 			Money calcLosses = Electricity::CalcLosses(calcDay, calcNight);
 			calcDay = Electricity::CalcWithBenefits(calcDay, Money(), false /* Homestead benefits 70% */);
 			calcNight = Electricity::CalcWithBenefits(calcNight, Money(), false /* Homestead benefits 70% */);
@@ -1733,13 +1157,13 @@ namespace LM
 			fout << calcNight << SepCSV;
 			fout << calcMonth << SepCSV;
 			fout << calcLosses << SepCSV;
-			for (auto& [name, money] : accrualBack->m_Costs.m_Others)
+			for (auto& [name, money] : accrualBack->m_Data.Costs.m_Others)
 			{
 				fout << money << SepCSV;
 				fullSum += money;
 			}
 
-			Money sumToDate = homestead->m_Electricity.CalcAccrualsToDate(accrualPrev->m_Date, homestead->m_Data.m_HasBenefits);
+			Money sumToDate = homestead->m_Electricity.CalcAccrualsToDate(accrualPrev->m_Data.Date, homestead->m_Data.ElectricityPrivilege.HasPrivilege);
 			fullSum += sumToDate;
 
 			fout << sumToDate << SepCSV;
@@ -1749,27 +1173,27 @@ namespace LM
 			Payment LastPay;
 			for (auto& payment : homestead->m_Electricity.m_Payments)
 			{
-				if (payment->m_Date > accrualPrev->m_Date && payment->m_Date <= accrualBack->m_Date)
+				if (payment->m_Data.Date > accrualPrev->m_Data.Date && payment->m_Data.Date <= accrualBack->m_Data.Date)
 				{
 					Payed = true;
-					LastPay.m_Amount += payment->m_Amount;
-					LastPay.m_Date = payment->m_Date;
+					LastPay.m_Data.Amount += payment->m_Data.Amount;
+					LastPay.m_Data.Date = payment->m_Data.Date;
 				}
 			}
 
 			if (Payed)
 			{
-				fout << LastPay.m_Date.GetString() << SepCSV;
-				fout << LastPay.m_Amount << SepCSV;
+				fout << LastPay.m_Data.Date.GetString() << SepCSV;
+				fout << LastPay.m_Data.Amount << SepCSV;
 			}
 			else
 			{
 				fout << SepCSV << SepCSV;
 			}
 
-			fout << fullSum - LastPay.m_Amount << std::endl;
+			fout << fullSum - LastPay.m_Data.Amount << std::endl;
 
-			std::cout << homestead->m_Electricity.CalcAccrualsToDate(accrualBack->m_Date, homestead->m_Data.m_HasBenefits) << std::endl;
+			std::cout << homestead->m_Electricity.CalcAccrualsToDate(accrualBack->m_Data.Date, homestead->m_Data.ElectricityPrivilege.HasPrivilege) << std::endl;
 		}
 
 		std::cout << "File Saved!" << std::endl;
@@ -1804,7 +1228,7 @@ namespace LM
 
 		for (auto& homestead : m_DataBase->m_Homesteads)
 		{
-			fout << homestead->m_Data.m_Number << ";";
+			fout << homestead->m_Data.Number << ";";
 			Money EndSum = homestead->m_MembershipFee.m_OpeningBalance.m_Money;
 			for (auto& accrual : homestead->m_MembershipFee.s_Accrual)
 			{
@@ -1814,9 +1238,9 @@ namespace LM
 			}
 			for (auto& payment : homestead->m_MembershipFee.m_Payments)
 			{
-				if (payment->m_Date > date)
+				if (payment->m_Data.Date > date)
 					break;
-				EndSum -= payment->m_Amount;
+				EndSum -= payment->m_Data.Amount;
 			}
 		}
 

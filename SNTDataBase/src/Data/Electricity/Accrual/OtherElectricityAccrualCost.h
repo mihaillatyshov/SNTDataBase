@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../Money/Money.h"
+#include "Data/Money/Money.h"
 
 namespace LM
 {

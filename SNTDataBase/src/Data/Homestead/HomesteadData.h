@@ -2,18 +2,23 @@
 
 #include <string>
 
+#include "Privilege/Privilege.h"
+
 namespace LM
 {
+
 	struct HomesteadData
 	{
-		std::string m_Number		= "";
-		std::string m_Surname		= "";
-		std::string m_Forename		= "";
-		std::string m_Patronymic	= "";
-		std::string m_PhoneNumber	= "";
-		std::string m_Note			= "";
+		std::string Number				= "";
+		std::string Surname				= "";
+		std::string Forename			= "";
+		std::string Patronymic			= "";
+		std::string PhoneNumber			= "";
+		std::string Note				= "";
 
-		bool m_HasBenefits			= false;
-		bool m_AddMembershipFees	= true;
+		//bool HasElectricityPrivileges	= false;
+		Privilege ElectricityPrivilege;
+		bool AddMembershipFees			= true;
 	};
+
 }
