@@ -11,6 +11,8 @@ namespace LM
 	class MembershipFeeAccrual
 	{
 	public:
+		MembershipFeeAccrual(Date _Date = Date(), Money _Money = Money());
+
 		static inline Money MembershipFeeAmount = Money(500);
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);

@@ -5,6 +5,12 @@
 namespace LM
 {
 
+	MembershipFeeAccrual::MembershipFeeAccrual(Date _Date, Money _Money)
+		: m_Date(_Date), m_Money(_Money)
+	{
+
+	}
+
 	nlohmann::basic_json<> MembershipFeeAccrual::GetJson() const
 	{
 		nlohmann::basic_json<> Result;

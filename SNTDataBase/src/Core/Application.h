@@ -9,6 +9,7 @@
 
 #include "Data/DataBase/DataBase.h"
 #include "UI/Table/Table.h"
+#include "UI/Table/SimpleTable.h"
 #include "UI/Tabs/TabsCollection/TabsCollection.h"
 #include "Base.h"
 
@@ -19,54 +20,6 @@ namespace LM
 	class Application
 	{
 	public:
-
-		template <typename T>
-		struct CreateWindow
-		{
-			T Intermediate;
-			Homestead* SelectedHomestead = nullptr;
-			bool Create = false;
-
-			void CreateNewIntermediate()
-			{
-				if (Create)
-					return;
-
-				if (s_Application->m_HomesteadsTable->GetSelectedId() != -1 && s_Application->m_HomesteadsTable->GetSelectedId() < s_Application->m_DataBase->m_Homesteads.size())
-					SelectedHomestead = s_Application->m_DataBase->m_Homesteads[s_Application->m_HomesteadsTable->GetSelectedId()].get();
-				else
-					SelectedHomestead = nullptr;
-
-				Intermediate = T();
-				Create = true;
-			}
-		};
-
-		template <typename T>
-		struct EditWindow
-		{
-			T* Editable = nullptr;
-			T Intermediate;
-			Homestead* SelectedHomestead = nullptr;
-			bool Create = false;
-			bool Dirty = false;
-
-			virtual void CreateNewIntermediate(T* editable)
-			{
-				if (Create)
-					return;
-
-				if (s_Application->m_HomesteadsTable->GetSelectedId() != -1 && s_Application->m_HomesteadsTable->GetSelectedId() < s_Application->m_DataBase->m_Homesteads.size())
-					SelectedHomestead = s_Application->m_DataBase->m_Homesteads[s_Application->m_HomesteadsTable->GetSelectedId()].get();
-				else
-					SelectedHomestead = nullptr;
-
-				Editable = editable;
-				Intermediate = *editable;
-				Create = true;
-				Dirty = false;
-			}
-		};
 
 		struct ColumnsInfo
 		{
@@ -82,8 +35,8 @@ namespace LM
 				Widths = new float[names.size()];
 				int WindowWidth, WindowHeight;
 				glfwGetWindowSize(s_Application->m_Window, &WindowWidth, &WindowHeight);
-				for (int i = 0; i < names.size(); i++)
-					Widths[i] = WindowWidth / names.size();
+				for (size_t i = 0; i < names.size(); i++)
+					Widths[i] = (float)WindowWidth / (float)names.size();
 				//ColumFilePaths.push_back("Columns/" + fileName + ".column");
 				ColumnsVector.push_back(this);
 				ColumnsMap[name] = this;
@@ -134,7 +87,7 @@ namespace LM
 
 		void DrawRect(int colId, ColumnsInfo& column);
 		void DrawRectBig(int colId, ColumnsInfo& column);
-		bool InputTextString(std::string_view name, std::string& data, int itemWidth = 0, ImGuiInputTextFlags_ flag = ImGuiInputTextFlags_None);
+		bool InputTextString(std::string_view name, std::string& data, float itemWidth = 0.0f, ImGuiInputTextFlags_ flag = ImGuiInputTextFlags_None);
 
 		void RecalculateElectricityAccruals();
 
@@ -168,7 +121,7 @@ namespace LM
 		void OnResizeEvent();
 		void OnDropEvent(const std::string& filename);
 	protected:
-		DataBase* m_DataBase = nullptr;
+		Ref<DataBase> m_DataBase = nullptr;
 
 		GLFWwindow* m_Window;
 
@@ -177,22 +130,6 @@ namespace LM
 		bool m_IsElectricityOpeningBalance = false;
 
 		bool m_OpenedMembershipAccrual = true;
-
-		CreateWindow<Homestead> CreateHomestead;
-		EditWindow<Homestead> EditHomestead;
-		//int SelectedHomestead = -1;
-
-		CreateWindow<Payment> CreateMembershipFeePayment;
-		EditWindow<Payment> EditMembershipFeePayment;
-		//int SelectedMembershipFee = -1;
-
-		CreateWindow<ElectricityAccrual> CreateElectricityAccrual;
-		EditWindow<ElectricityAccrual> EditElectricityAccrual;
-		//int SelectedElectricityAccrual = -1;
-
-		CreateWindow<Payment> CreateElectricityPayment;
-		EditWindow<Payment> EditElectricityPayment;
-		//int SelectedElectricityPayment = -1;
 
 		std::vector<std::string> m_Tests;
 
@@ -205,8 +142,10 @@ namespace LM
 
 		Ref<Table> m_HomesteadsTable;
 		Ref<Table> m_MembershipFeePaymentsTable;
+		Ref<SimpleTable> m_MembershipFeeOpeningBalanceTable;
 		Ref<Table> m_ElectricityAccrualsTable;
 		Ref<Table> m_ElectricityPaymentsTable;
+		Ref<SimpleTable> m_ElectricityOpeningBalanceTable;
 
 		Ref<TabsCollection> m_HomesteadTabsCollection;
 		Ref<TabsCollection> m_MembershipFeePaymentTabsCollection;

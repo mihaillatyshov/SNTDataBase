@@ -10,7 +10,7 @@
 namespace LM
 {
 
-	JsonLoaderUnloader::JsonLoaderUnloader(std::string_view _FileName, DataBase* _DataBase)
+	JsonLoaderUnloader::JsonLoaderUnloader(std::string_view _FileName, Ref<DataBase> _DataBase)
 	{
 		SetFileName(_FileName);
 		SetDataBase(_DataBase);
@@ -30,7 +30,7 @@ namespace LM
 
 		if (JS["MembershipFee"].is_object())
 		{
-			nlohmann::SetVector(MembershipFee::s_Accrual, JS["MembershipFee"], "Accrual");
+			nlohmann::SetVector(MembershipFee::s_Accruals, JS["MembershipFee"], "Accruals");
 		}
 	}
 
@@ -42,7 +42,7 @@ namespace LM
 
 		JS["OpeningBalance"]["Date"] = OpeningBalance::s_Date.GetJson();
 
-		JS["MembershipFee"]["Accrual"] = nlohmann::GetVector(MembershipFee::s_Accrual);
+		JS["MembershipFee"]["Accruals"] = nlohmann::GetVector(MembershipFee::s_Accruals);
 
 		UnloadFile(JS);
 	}

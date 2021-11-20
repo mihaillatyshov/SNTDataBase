@@ -8,10 +8,10 @@ namespace LM
 	class JsonLoaderUnloader
 	{
 	public:
-		JsonLoaderUnloader(std::string_view _FileName, DataBase* _DataBase);
+		JsonLoaderUnloader(std::string_view _FileName, Ref<DataBase> _DataBase);
 
 		inline void SetFileName(std::string_view _FileName) { m_FileName = _FileName; }
-		inline void SetDataBase(DataBase* _DataBase) { m_DataBase = _DataBase; }
+		inline void SetDataBase(Ref<DataBase> _DataBase) { m_DataBase = _DataBase; }
 
 		void Load();
 		void Unload();
@@ -21,7 +21,7 @@ namespace LM
 		nlohmann::json LoadFile();
 	protected:
 		std::string m_FileName;
-		DataBase* m_DataBase;
+		Ref<DataBase> m_DataBase;
 	};
 
 }

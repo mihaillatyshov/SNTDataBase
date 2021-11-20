@@ -7,85 +7,94 @@
 namespace LM
 {
 
+	Homestead::Homestead()
+	{
+		RecalculateMembershipFee();
+	}
+
 	Homestead::Homestead(Ref<const TabDataStruct> _TabDS)
 	{
 		m_Data = std::static_pointer_cast<const HomesteadTabDS>(_TabDS)->GetData();
-		if (m_Data.AddMembershipFees)
-		{
-			for (int i = 0; i < MembershipFee::s_Accrual.size(); i++)
-			{
-				m_MembershipFee.m_Debt += MembershipFee::s_Accrual[i].m_Money;
-			}
-		}
+		RecalculateMembershipFee();
+		RecalculateElectricity();
 	}
 
 	void Homestead::Edit(Ref<const TabDataStruct> _TabDS)
 	{
-		auto NewData = std::static_pointer_cast<const HomesteadTabDS>(_TabDS)->GetData();
-		if (m_Data.ElectricityPrivilege.HasPrivilege != NewData.ElectricityPrivilege.HasPrivilege)
-		{
-			m_MembershipFee.m_Debt = m_MembershipFee.m_OpeningBalance.m_Money;
-			if (NewData.AddMembershipFees)
-			{
-				for (int i = 0; i < MembershipFee::s_Accrual.size(); i++)
-				{
-					m_MembershipFee.m_Debt += MembershipFee::s_Accrual[i].m_Money;
-				}
-			}
-		}
-		m_Data = NewData;
+		m_Data = std::static_pointer_cast<const HomesteadTabDS>(_TabDS)->GetData();
+		RecalculateMembershipFee();
+		RecalculateElectricity();
+	}
+
+	void Homestead::DrawFullName() const
+	{
+		ImGui::Text(u8"%s %s %s", m_Data.Surname.data(), m_Data.Forename.data(), m_Data.Patronymic.data());
 	}
 
 	void Homestead::AddMembershipFeePayment(Ref<const TabDataStruct> _TabDS)
 	{
 		m_MembershipFee.AddPayment(_TabDS);
-
+		RecalculateMembershipFee();
 	}
 
 	void Homestead::EditMembershipFeePayment(size_t _PayId, Ref<const TabDataStruct> _TabDS)
 	{
 		m_MembershipFee.EditPayment(_PayId, _TabDS);
+		RecalculateMembershipFee();
 	}
 
 	void Homestead::DeleteMembershipFeePayment(size_t _PayId)
 	{
 		m_MembershipFee.DeletePayment(_PayId);
+		RecalculateMembershipFee();
+	}
+
+	void Homestead::SetMembershipFeeOpeningBalance(const Money& _Money)
+	{
+		m_MembershipFee.SetOpeningBalance(_Money);
+		RecalculateMembershipFee();
 	}
 
 	void Homestead::AddElectricityAccrual(Ref<const TabDataStruct> _TabDS)
 	{
 		m_Electricity.AddAccrual(_TabDS);
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		RecalculateElectricity();
 	}
 
 	void Homestead::EditElectricityAccrual(size_t _AccId, Ref<const TabDataStruct> _TabDS)
 	{
 		m_Electricity.EditAccrual(_AccId, _TabDS);
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		RecalculateElectricity();
 	}
 
 	void Homestead::DeleteElectricityAccrual(size_t _AccId)
 	{
 		m_Electricity.DeleteAccrual(_AccId);
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		RecalculateElectricity();
 	}
 
 	void Homestead::AddElectricityPayment(Ref<const TabDataStruct> _TabDS)
 	{
 		m_Electricity.AddPayment(_TabDS);
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		RecalculateElectricity();
 	}
 
 	void Homestead::EditElectricityPayment(size_t _PayId, Ref<const TabDataStruct> _TabDS)
 	{
 		m_Electricity.EditPayment(_PayId, _TabDS);
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		RecalculateElectricity();
 	}
 
 	void Homestead::DeleteElectricityPayment(size_t _PayId)
 	{
 		m_Electricity.DeletePayment(_PayId);
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		RecalculateElectricity();
+	}
+
+	void Homestead::SetElectricityOpeningBalance(const Money& _Money)
+	{
+		m_Electricity.SetOpeningBalance(_Money);
+		RecalculateElectricity();
 	}
 
 	std::vector<std::function<void(void)>> Homestead::GetDrawableColumns() const
@@ -98,7 +107,7 @@ namespace LM
 			},
 			[=]()
 			{
-				ImGui::Text(u8"%s %s %s", m_Data.Surname.data(), m_Data.Forename.data(), m_Data.Patronymic.data());
+				DrawFullName();
 			},
 			[=]()
 			{
@@ -116,6 +125,16 @@ namespace LM
 		_TabDS = CreateRef<HomesteadTabDS>(m_Data);
 	}
 
+	void Homestead::RecalculateMembershipFee()
+	{
+		m_MembershipFee.Recalculate(m_Data.MembershipFeePrivilege);
+	}
+
+	void Homestead::RecalculateElectricity()
+	{
+		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+	}
+
 	nlohmann::basic_json<> Homestead::GetJson() const
 	{
 		nlohmann::basic_json<> Result;
@@ -127,7 +146,7 @@ namespace LM
 		Result["Note"]						= m_Data.Note;
 
 		Result["ElectricityPrivilege"]		= m_Data.ElectricityPrivilege.GetJson();
-		Result["AddMembershipFees"]			= m_Data.AddMembershipFees;
+		Result["MembershipFeePrivilege"]	= m_Data.MembershipFeePrivilege.GetJson();
 
 		Result["MembershipFee"]				= m_MembershipFee.GetJson();
 		Result["Electricity"]				= m_Electricity.GetJson();
@@ -147,8 +166,8 @@ namespace LM
 		nlohmann::SetValue(m_Data.PhoneNumber,			_JS, "PhoneNumber");
 		nlohmann::SetValue(m_Data.Note,					_JS, "Note");
 
-		m_Data.ElectricityPrivilege.SetJson(_JS["ElectricityPrivilege"]);
-		nlohmann::SetValue(m_Data.AddMembershipFees,	_JS, "AddMembershipFees");
+		m_Data.ElectricityPrivilege.SetJson(  _JS["ElectricityPrivilege"]);
+		m_Data.MembershipFeePrivilege.SetJson(_JS["MembershipFeePrivilege"]);
 
 		m_MembershipFee.SetJson(_JS["MembershipFee"]);
 		m_Electricity.SetJson(  _JS["Electricity"]);

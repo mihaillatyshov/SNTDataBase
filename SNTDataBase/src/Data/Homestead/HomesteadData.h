@@ -18,7 +18,7 @@ namespace LM
 
 		//bool HasElectricityPrivileges	= false;
 		Privilege ElectricityPrivilege;
-		bool AddMembershipFees			= true;
+		Privilege MembershipFeePrivilege;
 	};
 
 }

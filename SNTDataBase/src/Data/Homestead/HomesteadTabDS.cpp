@@ -28,7 +28,15 @@ namespace LM
 			m_Data.ElectricityPrivilege.Start.DrawEdit();
 		}
 		
-		IsDirtyDecorator(ImGui::Checkbox(u8"Начислять членские взносы?", &m_Data.AddMembershipFees));
+		IsDirtyDecorator(ImGui::Checkbox(u8"Льготы по членским взносам", &m_Data.MembershipFeePrivilege.HasPrivilege));
+		if (m_Data.MembershipFeePrivilege.HasPrivilege)
+		{
+			ImGui::SameLine();
+			ImGui::TextUnformatted(u8"        Начало льготы:   ");
+			ImGui::SameLine();
+			m_Data.MembershipFeePrivilege.Start.DrawEdit();
+		}
+
 	}
 
 }

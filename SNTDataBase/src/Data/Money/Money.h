@@ -13,7 +13,7 @@ namespace LM
 
 		void Draw() const;
 		void DrawAbs() const;
-		bool DrawEdit(std::string_view _FieldName);
+		bool DrawEdit(std::string_view _FieldName = "", float _ItemWidth = 250.0f);
 		inline int64_t GetRubs() const { return abs(m_Amount / 100); }
 		inline int64_t GetCops() const { return abs(m_Amount % 100); }
 

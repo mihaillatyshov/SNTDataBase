@@ -8,10 +8,12 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 #include <imgui.h>
 
 #include "LoaderUnloader/JsonLoaderUnloader.h"
+#include "Utils/Time.h"
 
 namespace fs = std::filesystem;
 
@@ -45,6 +47,25 @@ namespace LM
 			[=]()			{ return m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().GetPaymentsCount(); }
 		);
 
+		m_MembershipFeeOpeningBalanceTable = CreateRef<SimpleTable>
+		(
+			std::vector<std::string>{ u8"Номер участка", u8"ФИО", u8"Начальное сальдо" },
+			SimpleTable::GEDF_V 
+			{
+				[=](size_t _Id) { ImGui::TextUnformatted(m_DataBase->GetHomestead(_Id)->GetNumber().data()); },
+				[=](size_t _Id) { m_DataBase->GetHomestead(_Id)->DrawFullName(); },
+				[=](size_t _Id) 
+				{ 
+					Money Inter = m_DataBase->GetHomestead(_Id)->GetMembershipFee().GetOpeningBalance();
+					if (Inter.DrawEdit())
+					{
+						m_DataBase->SetMembershipFeeOpeningBalance(_Id, Inter);
+					}
+				} 
+			},
+			[=]() { return m_DataBase->GetHomesteadsCount(); }
+		);
+
 		m_ElectricityAccrualsTable = CreateRef<Table>
 		(
 			std::vector<std::string>{ u8"Дата", u8"День", u8"Ночь", u8"Общее" },
@@ -59,6 +80,25 @@ namespace LM
 			[=]() { return m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetElectricity().GetPaymentsCount(); }
 		);
 
+		m_ElectricityOpeningBalanceTable = CreateRef<SimpleTable>
+		(
+			std::vector<std::string>{ u8"Номер участка", u8"ФИО", u8"Начальное сальдо" },
+			SimpleTable::GEDF_V
+			{
+				[=](size_t _Id) { ImGui::TextUnformatted(m_DataBase->GetHomestead(_Id)->GetNumber().data()); },
+				[=](size_t _Id) { m_DataBase->GetHomestead(_Id)->DrawFullName(); },
+				[=](size_t _Id)
+				{
+					Money Inter = m_DataBase->GetHomestead(_Id)->GetElectricity().GetOpeningBalance();
+					if (Inter.DrawEdit())
+					{
+						m_DataBase->SetElectricityOpeningBalance(_Id, Inter);
+					}
+				}
+			},
+			[=]() { return m_DataBase->GetHomesteadsCount(); }
+		);
+
 		m_HomesteadTabsCollection				= CreateRef<TabsCollection>(u8"участка",	m_HomesteadsTable);
 		m_MembershipFeePaymentTabsCollection	= CreateRef<TabsCollection>(u8"платежа",	m_MembershipFeePaymentsTable);
 		m_ElectricityAccrualTabsCollection		= CreateRef<TabsCollection>(u8"начисления", m_ElectricityAccrualsTable);
@@ -68,27 +108,23 @@ namespace LM
 	Application::~Application()
 	{
 		SaveColumns();
-		CreateBackup();
+		CreateBackup("end");
 		SaveDataBase();
 
 		ColumnsInfo::Clear();
-		delete m_DataBase;
 	}
 
 	void Application::CreateBackup(std::string_view _Param)
 	{
-		time_t t;
-		struct tm* t_m;
-		t = time(NULL);
-		t_m = localtime(&t);
+		auto LocalTime = Time::GetLocalTime();
 
 		std::ostringstream Filename;
-		Filename << 1900 + t_m->tm_year << "-" 
-			<< std::setfill('0') << std::setw(2) << 1 + t_m->tm_mon	<< "-" 
-			<< std::setfill('0') << std::setw(2) << t_m->tm_mday	<< "-" 
-			<< std::setfill('0') << std::setw(2) << t_m->tm_hour	<< "-" 
-			<< std::setfill('0') << std::setw(2) << t_m->tm_min		<< "-" 
-			<< std::setfill('0') << std::setw(2) << t_m->tm_sec		<< (_Param.size() ? "-" : "") 
+		Filename									<< LocalTime->tm_year + 1900	<< "-"
+			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_mon  + 1		<< "-"
+			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_mday			<< "-"
+			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_hour			<< "-"
+			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_min			<< "-"
+			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_sec			<< (_Param.size() ? "-" : "")
 			<< _Param << ".json";
 		std::cout << Filename.str() << std::endl;
 
@@ -110,7 +146,7 @@ namespace LM
 
 	void Application::LoadFile()
 	{
-		m_DataBase = new DataBase;
+		m_DataBase = CreateRef<DataBase>();
 
 		JsonLoaderUnloader JSLU("JsDB.json", m_DataBase);
 		JSLU.Load();
@@ -193,7 +229,6 @@ namespace LM
 		//}
 
 		std::cout << filename << std::endl;
-
 	}
 
 	void Application::DrawMenuBar()
@@ -325,23 +360,25 @@ namespace LM
 
 		if (ImGui::Begin("Accruals"))
 		{
+			auto LocalTime = Time::GetLocalTime();
+			ImGui::Text("%d%02d%02d", LocalTime->tm_year, LocalTime->tm_mon, LocalTime->tm_mday);
 			if (ImGui::Button("Sort"))
 			{
-				std::sort(MembershipFee::s_Accrual.begin(), MembershipFee::s_Accrual.end(), [](const MembershipFeeAccrual& _First, const MembershipFeeAccrual& _Second)
+				std::sort(MembershipFee::s_Accruals.begin(), MembershipFee::s_Accruals.end(), [](const MembershipFeeAccrual& _First, const MembershipFeeAccrual& _Second)
 					{
 						return _First.m_Date < _Second.m_Date;
 					});
 			}
-			for (int i = 0; i < MembershipFee::s_Accrual.size(); i++)
+			for (int i = 0; i < MembershipFee::s_Accruals.size(); i++)
 			{
 				ImGui::Text("%03d", i);
 				ImGui::SameLine();
-				MembershipFee::s_Accrual[i].m_Date.Draw();
+				MembershipFee::s_Accruals[i].m_Date.Draw();
 				ImGui::SameLine();
-				MembershipFee::s_Accrual[i].m_Money.Draw();
+				MembershipFee::s_Accruals[i].m_Money.Draw();
 			}
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 
 	void Application::DrawRect(int colId, ColumnsInfo& column)
@@ -357,7 +394,7 @@ namespace LM
 			float x = p.x - 24, y = p.y - 3;
 			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + 9000 + 48, y + sz), col32);
 
-			ImGui::Columns(column.Names.size(), column.Name.c_str(), false);
+			ImGui::Columns((int)column.Names.size(), column.Name.c_str(), false);
 		}
 	}
 
@@ -374,16 +411,16 @@ namespace LM
 			float x = p.x - 24, y = p.y - 2;
 			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + 9000 + 48, y + sz), col32);
 
-			ImGui::Columns(column.Names.size(), column.Name.c_str(), false);
+			ImGui::Columns((int)column.Names.size(), column.Name.c_str(), false);
 		}
 	}
 
-	bool Application::InputTextString(std::string_view name, std::string& data, int itemWidth, ImGuiInputTextFlags_ flag)
+	bool Application::InputTextString(std::string_view name, std::string& data, float itemWidth, ImGuiInputTextFlags_ flag)
 	{
 		if (itemWidth)
 			ImGui::PushItemWidth(itemWidth);
 
-		int Size = data.size() + 128;
+		size_t Size = data.size() + 128;
 
 		char* CharBufferNumber = new char[Size] { 0 };
 		memcpy(CharBufferNumber, data.data(), data.size());
@@ -471,21 +508,17 @@ namespace LM
 
 			DrawCheckMembershipAccrual();
 
-			time_t t;
-			struct tm* t_m;
-			t = time(NULL);
-			t_m = localtime(&t);
-			//std::string date = std::to_string(1900 + t_m->tm_year) + "-" + std::to_string(1 + t_m->tm_mon) + "-" + std::to_string(t_m->tm_mday);
+			auto LocalTime = Time::GetLocalTime();
 
 			const Money Amount = m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId())->GetMembershipFee().GetDebt();//m_MembershipFee.m_Debt;
 			if (Amount < 0)
 			{
-				ImGui::Text(u8"Переплата на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
+				ImGui::Text(u8"Переплата на %02d.%02d.%d:", LocalTime->tm_mday, 1 + LocalTime->tm_mon, 1900 + LocalTime->tm_year); ImGui::SameLine();
 				Amount.DrawAbs();
 			}
 			else
 			{
-				ImGui::Text(u8"Долг на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
+				ImGui::Text(u8"Долг на %02d.%02d.%d:", LocalTime->tm_mday, 1 + LocalTime->tm_mon, 1900 + LocalTime->tm_year); ImGui::SameLine();
 				Amount.DrawAbs();
 			}
 
@@ -544,242 +577,68 @@ namespace LM
 
 			date.DrawEdit();
 
-			ColumnsInfo& column = *ColumnsInfo::ColumnsMap["MembershipFeeOpeningBalance"];
+			m_MembershipFeeOpeningBalanceTable->Draw();
 
-			ImGui::Columns(column.Names.size(), column.Name.c_str(), true); // 2-ways, with border
-			ImGui::Separator();
-			if (column.Update)
-			{
-				if (column.WidthLoaded)
-				{
-					for (int i = 0; i < column.Names.size() - 1; i++)
-					{
-						ImGui::SetColumnWidth(i, column.Widths[i]);
-						std::cout << column.Widths[i] << " ";
-					}
-					std::cout << column.Widths[column.Names.size() - 1] << "\n";
-					column.Update = false;
-				}
-				else
-				{
-					column.WidthLoaded = true;
-				}
-			}
-			column.DrawNames();
-
-			ImGui::Separator();
-			ImGui::Columns(1);
-			ImGui::BeginChild(column.Name.c_str(), ImVec2(0, 0), false);
-			ImGui::Columns(column.Names.size(), column.Name.c_str(), false);
-			for (int i = 0; i < column.Names.size() - 1; i++)
-			{
-				ImGui::SetColumnWidth(i, column.Widths[i]);
-			}
-
-			for (int i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
-			{
-				DrawRectBig(i, column);
-
-				ImGui::PushID(i);
-
-				auto& homestead = m_DataBase->m_Homesteads[i];
-
-				ImGui::Text(homestead->GetNumber().data());
-				ImGui::NextColumn();
-
-				ImGui::Text("%s %s %s", homestead->GetSurname().data(), homestead->GetForename().data(), homestead->GetPatronymic().data());
-				ImGui::NextColumn();
-
-				homestead->m_MembershipFee.m_OpeningBalance.s_Date.Draw();
-				ImGui::NextColumn();
-
-				homestead->m_MembershipFee.m_Debt -= homestead->m_MembershipFee.m_OpeningBalance.m_Money;
-				homestead->m_MembershipFee.m_OpeningBalance.m_Money.DrawEdit(u8"Сумма");
-				homestead->m_MembershipFee.m_Debt += homestead->m_MembershipFee.m_OpeningBalance.m_Money;
-
-				ImGui::NextColumn();
-
-				ImGui::PopID();
-			}
-			ImGui::Columns(1);
-			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
 	}
 
 	void Application::DrawCheckMembershipAccrual()
 	{
-		static std::vector<MembershipFeeAccrual> accruals;
-		static std::vector<int> AccrualsToDelete;
+		static std::vector<MembershipFeeAccrual> AccrualsToAdd;
+		static std::vector<Date> AccrualsToDelete;
 		if (m_OpenedMembershipAccrual)
 		{
 			m_OpenedMembershipAccrual = false;
-			accruals.clear();
-			AccrualsToDelete.clear();
-			time_t t;
-			struct tm* t_m;
-			t = time(NULL);
-			t_m = localtime(&t);
-
-			int NowYear = 1900 + t_m->tm_year;
-			int NowMonth = 1 + t_m->tm_mon;
-			OpeningBalance::s_Date;
-			int Size = (NowYear - OpeningBalance::s_Date.m_Year) * 12 - OpeningBalance::s_Date.m_Month + NowMonth;
-			//std::cout << Size << std::endl;
-			if (Size < 0)
-			{
-				// 1. Дата начального сальдо больше текушей
-				ImGui::OpenPopup(u8"Дата начального сальдо больше текушей");
-			}
-			else if (Size == 0)
-			{
-				// 2.
-			}
-			else if (Size > 0)
-			{
-				// 3.
-				int TestYear = OpeningBalance::s_Date.m_Year;
-				int TestMonth = OpeningBalance::s_Date.m_Month + 1;
-				for (int i = 0; i < Size; i++, TestMonth++)
-				{
-					if (TestMonth == 13)
-					{
-						TestMonth = 1;
-						TestYear += 1;
-					}
-					bool founded = false;
-					for (auto& accrual : MembershipFee::s_Accrual)
-					{
-						if (accrual.m_Date.m_Year == TestYear && accrual.m_Date.m_Month == TestMonth)
-						{
-							founded = true;
-							break;
-						}
-					}
-					if (!founded)
-					{
-						accruals.push_back(MembershipFeeAccrual());
-						accruals.back().m_Date.m_Month = TestMonth;
-						accruals.back().m_Date.m_Year = TestYear;
-						accruals.back().m_Money = MembershipFeeAccrual::MembershipFeeAmount;
-						//std::cout << accruals.back().m_Money.m_Amount << std::endl;
-					}
-				}
-			}
-
-			char lable[12]{ 0 };
-			sprintf(lable, "%d%02d", OpeningBalance::s_Date.m_Year, OpeningBalance::s_Date.m_Month);
-			int OpeningBalanceDate;
-			sscanf(lable, "%d", &OpeningBalanceDate);
-			for (int i = 0; i < MembershipFee::s_Accrual.size(); i++)
-			{
-				char buffer[12]{ 0 };
-				sprintf(buffer, "%d%02d", MembershipFee::s_Accrual[i].m_Date.m_Year, MembershipFee::s_Accrual[i].m_Date.m_Month);
-				int AccrualDate;
-				sscanf(buffer, "%d", &AccrualDate);
-				std::cout << "Accrual check " << i << ": " << AccrualDate << " " << OpeningBalanceDate;
-				if (AccrualDate <= OpeningBalanceDate)
-				{
-					std::cout << " need to delete";
-					AccrualsToDelete.push_back(i);
-				}
-				std::cout << std::endl;
-			}
-
-			std::sort(AccrualsToDelete.begin(), AccrualsToDelete.end(), [](const int& first, const int& second)
-				{
-					MembershipFeeAccrual& ac1 = MembershipFee::s_Accrual[first];
-					MembershipFeeAccrual& ac2 = MembershipFee::s_Accrual[second];
-
-					return ac1.m_Date < ac2.m_Date;
-				});
-
-			if (accruals.size() > 0 || AccrualsToDelete.size() > 0)
+			MembershipFee::GetAccrualsToAdd(AccrualsToAdd);
+			MembershipFee::GetAccrualsToDelete(AccrualsToDelete);
+			if (AccrualsToAdd.size() > 0 || AccrualsToDelete.size() > 0)
 			{
 				ImGui::OpenPopup(u8"Начисления для добавления##Членские взносы");
 			}
 		}
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImVec2 window_size = ImVec2(600, 400);
-		ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-		ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-		ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-		ImGui::SetNextWindowSize(window_size);
-		//ImGui::SetNextWindowPos();
-		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGuiViewport* Viewport = ImGui::GetMainViewport();
+		ImVec2 WindowSize = ImVec2(800, 500);
+		ImVec2 Distance = ImVec2(Viewport->Size.x / 2, Viewport->Size.y / 2);
+		ImVec2 WindowPos = ImVec2(Viewport->Pos.x + Distance.x - WindowSize.x / 2, Viewport->Pos.y + Distance.y - WindowSize.y / 2);
+		ImGui::SetNextWindowPos(WindowPos);
+		ImGui::SetNextWindowSize(WindowSize);
+		ImGui::SetNextWindowViewport(Viewport->ID);
 
 		if (ImGui::BeginPopupModal(u8"Начисления для добавления##Членские взносы", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
 		{
-			//std::cout << "Accruals to delete count:  " << AccrualsToDelete.size() << std::endl;
 			ImGui::Text(u8"Отсутствующие начисления членских взносов для всех участков:");
 
-			ImGui::BeginChild("ChildNew", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 300), true);
-			for (int i = 0; i < accruals.size(); i++)
+			ImGui::BeginChild("ChildNew", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 400), true);
+			for (int i = 0; i < AccrualsToAdd.size(); i++)
 			{
-				MembershipFeeAccrual& accrual = accruals[i];
 				ImGui::PushID(i);
-				accrual.m_Date.Draw();
+				AccrualsToAdd[i].m_Date.Draw();
+				AccrualsToAdd[i].m_Money.DrawEdit("");
 				ImGui::SameLine();
 				if (ImGui::Button(u8"Добавить"))
 				{
-					MembershipFee::s_Accrual.push_back(accrual);
-					for (auto& homestead : m_DataBase->m_Homesteads)
-					{
-						if (homestead->GetAddMembershipFees())
-						{
-							homestead->m_MembershipFee.m_Debt += accrual.m_Money;
-						}
-					}
-					accruals.erase(accruals.begin() + i);
-					i--;
+					MembershipFee::AddAccrual(AccrualsToAdd[i]);
+					AccrualsToAdd.erase(AccrualsToAdd.begin() + i--);
+					m_DataBase->RecalculateMembershipFee();
 				}
-
+				ImGui::Separator();
 				ImGui::PopID();
 			}
 			ImGui::EndChild();
 
 			ImGui::SameLine();
-
-			ImGui::BeginChild("ChildDel", ImVec2(0, 300), true);
+			ImGui::BeginChild("ChildDel", ImVec2(0, 400), true);
 			for (int i = 0; i < AccrualsToDelete.size(); i++)
 			{
-				MembershipFeeAccrual& accrual = MembershipFee::s_Accrual[AccrualsToDelete[i]];
 				ImGui::PushID(i);
-				accrual.m_Date.Draw();
+				AccrualsToDelete[i].Draw();
 				ImGui::SameLine();
 				if (ImGui::Button(u8"Удалить"))
 				{
-					for (auto& homestead : m_DataBase->m_Homesteads)
-					{
-						if (homestead->GetAddMembershipFees())
-						{
-							homestead->m_MembershipFee.m_Debt -= accrual.m_Money;
-						}
-					}
-					MembershipFee::s_Accrual.erase(MembershipFee::s_Accrual.begin() + AccrualsToDelete[i]);
-					AccrualsToDelete.erase(AccrualsToDelete.begin() + i);
-
-					AccrualsToDelete.clear();
-					for (int i = 0; i < MembershipFee::s_Accrual.size(); i++)
-					{
-						if (MembershipFee::s_Accrual[i].m_Date <= OpeningBalance::s_Date)
-						{
-							std::cout << " need to delete";
-							AccrualsToDelete.push_back(i);
-						}
-						std::cout << std::endl;
-					}
-
-					std::sort(AccrualsToDelete.begin(), AccrualsToDelete.end(), [](const int& first, const int& second)
-						{
-							MembershipFeeAccrual& ac1 = MembershipFee::s_Accrual[first];
-							MembershipFeeAccrual& ac2 = MembershipFee::s_Accrual[second];
-
-							return ac1.m_Date < ac2.m_Date;
-						});
-
-					i--;
+					MembershipFee::DeleteAccrual(AccrualsToDelete[i]);
+					AccrualsToDelete.erase(AccrualsToDelete.begin() + i--);
+					m_DataBase->RecalculateMembershipFee();
 				}
 
 				ImGui::PopID();
@@ -872,20 +731,17 @@ namespace LM
 
 			Homestead& homestead = *m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
 
-			time_t t;
-			struct tm* t_m;
-			t = time(NULL);
-			t_m = localtime(&t);
+			auto LocalTime = Time::GetLocalTime();
 
 			Money& Amount = homestead.m_Electricity.m_All;
 			if (Amount < 0)
 			{
-				ImGui::Text(u8"Переплата на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
+				ImGui::Text(u8"Переплата на %02d.%02d.%d:", LocalTime->tm_mday, 1 + LocalTime->tm_mon, 1900 + LocalTime->tm_year); ImGui::SameLine();
 				Amount.DrawAbs();
 			}
 			else
 			{
-				ImGui::Text(u8"Долг на %02d.%02d.%d:", t_m->tm_mday, 1 + t_m->tm_mon, 1900 + t_m->tm_year); ImGui::SameLine();
+				ImGui::Text(u8"Долг на %02d.%02d.%d:", LocalTime->tm_mday, 1 + LocalTime->tm_mon, 1900 + LocalTime->tm_year); ImGui::SameLine();
 				Amount.DrawAbs();
 			}
 			if (ImGui::Button(u8"Добавить платеж"))
@@ -982,7 +838,7 @@ namespace LM
 				//	ImGui::Text("%02d.%02d.%d", accrual.m_Date.Day, accrual.m_Date.Month, accrual.m_Date.Year);
 				//}
 
-				ImGui::Columns(column.Names.size(), column.Name.c_str(), true);
+				ImGui::Columns((int)column.Names.size(), column.Name.c_str(), true);
 				ImGui::Separator();
 				//static bool Init = true;
 				if (column.Update)
@@ -1008,7 +864,7 @@ namespace LM
 				ImGui::Separator();
 				ImGui::Columns(1);
 				ImGui::BeginChild(column.Name.c_str(), ImVec2(0, 0), false);
-				ImGui::Columns(column.Names.size(), column.Name.c_str(), false);
+				ImGui::Columns((int)column.Names.size(), column.Name.c_str(), false);
 				for (int i = 0; i < column.Names.size() - 1; i++)
 				{
 					ImGui::SetColumnWidth(i, column.Widths[i]);
@@ -1230,7 +1086,7 @@ namespace LM
 		{
 			fout << homestead->m_Data.Number << ";";
 			Money EndSum = homestead->m_MembershipFee.m_OpeningBalance.m_Money;
-			for (auto& accrual : homestead->m_MembershipFee.s_Accrual)
+			for (auto& accrual : homestead->m_MembershipFee.s_Accruals)
 			{
 				if (accrual.m_Date > date)
 					break;
@@ -1254,63 +1110,8 @@ namespace LM
 		{
 			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsCount());
 
-			ColumnsInfo& column = *ColumnsInfo::ColumnsMap["ElectricityOpeningBalance"];
+			m_ElectricityOpeningBalanceTable->Draw();
 
-			ImGui::Columns(column.Names.size(), column.Name.c_str(), true); // 2-ways, with border
-			ImGui::Separator();
-			if (column.Update)
-			{
-				if (column.WidthLoaded)
-				{
-					for (int i = 0; i < column.Names.size() - 1; i++)
-					{
-						ImGui::SetColumnWidth(i, column.Widths[i]);
-						std::cout << column.Widths[i] << " ";
-					}
-					std::cout << column.Widths[column.Names.size() - 1] << "\n";
-					column.Update = false;
-				}
-				else
-				{
-					column.WidthLoaded = true;
-				}
-			}
-			column.DrawNames();
-
-			ImGui::Separator();
-			ImGui::Columns(1);
-			ImGui::BeginChild(column.Name.c_str(), ImVec2(0, 0), false);
-			ImGui::Columns(column.Names.size(), column.Name.c_str(), false);
-			for (int i = 0; i < column.Names.size() - 1; i++)
-			{
-				ImGui::SetColumnWidth(i, column.Widths[i]);
-			}
-
-			for (int i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
-			{
-				DrawRectBig(i, column);
-
-
-				ImGui::PushID(i);
-
-				Homestead& homestead = *m_DataBase->m_Homesteads[i];
-
-				ImGui::Text(homestead.GetNumber().data());
-				ImGui::NextColumn();
-
-				ImGui::Text("%s %s %s", homestead.GetSurname().data(), homestead.GetForename().data(), homestead.GetPatronymic().data());
-				ImGui::NextColumn();
-
-				homestead.m_Electricity.m_All -= homestead.m_Electricity.m_OpeningBalance;
-				homestead.m_Electricity.m_OpeningBalance.DrawEdit(u8"Сумма");
-				homestead.m_Electricity.m_All += homestead.m_Electricity.m_OpeningBalance;
-
-				ImGui::NextColumn();
-
-				ImGui::PopID();
-			}
-			ImGui::Columns(1);
-			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
 	}

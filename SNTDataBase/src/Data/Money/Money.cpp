@@ -25,12 +25,12 @@ namespace LM
 		ImGui::Text(u8"%lld.%02lld руб", abs(m_Amount / 100), abs(m_Amount % 100));
 	}
 
-	bool Money::DrawEdit(std::string_view _FieldName)
+	bool Money::DrawEdit(std::string_view _FieldName, float _ItemWidth)
 	{
 		bool isEdit = false;
 		char label[128];
 		sprintf(label, "%lld.%02lld", m_Amount / 100, abs(m_Amount % 100));
-		ImGui::PushItemWidth(250);
+		ImGui::PushItemWidth(_ItemWidth);
 		if (ImGui::InputText(_FieldName.data(), label, 128, ImGuiInputTextFlags_CharsDecimal))
 		{
 			int64_t Rub = 0, Cop = 0, Cop1 = 0, Cop2 = 0;

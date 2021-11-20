@@ -40,6 +40,9 @@ namespace LM
 		inline const Ref<const Payment> GetPayment(size_t _Id) const { return m_Payments[_Id]; }
 		size_t GetPaymentsCount() const { return m_Payments.size(); }
 
+		const Money& GetOpeningBalance() const { return m_OpeningBalance; }
+		inline void SetOpeningBalance(const Money& _Money) { m_OpeningBalance = _Money; }
+
 		inline const Money& GetAll() const { return m_All; }
 
 		nlohmann::basic_json<> GetJson() const;

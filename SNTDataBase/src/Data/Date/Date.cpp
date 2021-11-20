@@ -6,6 +6,11 @@
 
 namespace LM
 {
+	Date::Date(int _Year, int _Month, int _Day)
+		: m_Year(_Year), m_Month(_Month), m_Day(_Day)
+	{
+		FixDate();
+	}
 
 	void Date::Draw() const
 	{
@@ -47,7 +52,7 @@ namespace LM
 
 	}
 
-	int Date::GetDaysInMonth(int _Month, int _Year) const
+	int Date::GetDaysInMonth(int _Month, int _Year)
 	{
 		const int Days[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 		if ((_Month == 2) && (_Year % 4 == 0))
@@ -62,19 +67,31 @@ namespace LM
 		return date;
 	}
 
+	void Date::IncMonth()
+	{
+		if (++m_Month > 12)
+		{
+			m_Month -= 12;
+			m_Year++;
+		}
+		FixDate();
+	}
+
 	void Date::FixDate()
 	{
 		int MinYear = 0;
 		if (m_Year < MinYear)
 			m_Year = MinYear;
 
-		int MinMonth = 1; int MaxMonth = 12;
+		int MinMonth = 1; 
+		int MaxMonth = 12;
 		if (m_Month < MinMonth)
 			m_Month = MinMonth;
 		else if (m_Month > MaxMonth)
 			m_Month = MaxMonth;
 
-		int MinDay = 1; int MaxDay = GetDaysInMonth(m_Month, m_Year);
+		int MinDay = 1; 
+		int MaxDay = GetDaysInMonth(m_Month, m_Year);
 		if (m_Year % 4 == 0) MaxDay++;
 		if (m_Day < MinDay)
 			m_Day = MinDay;

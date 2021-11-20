@@ -1,17 +1,17 @@
-#include "Table.h"
+#include "SimpleTable.h"
 
 #include <imgui.h>
 #include "Data/Homestead/Homestead.h"
 
 namespace LM
 {
-	Table::Table(const std::vector<std::string>& _Names, const GE_F& _GetElement, const GEC_F& _GetElementsCount)
-		: m_Names(_Names), m_GetElement(_GetElement), m_GetElementsCount(_GetElementsCount)
+	SimpleTable::SimpleTable(const std::vector<std::string>& _Names, const GEDF_V& _GetElementDrawFunc, const GEC_F& _GetElementsCount)
+		: m_Names(_Names), m_GetElementDraw(_GetElementDrawFunc), m_GetElementsCount(_GetElementsCount)
 	{
 
 	}
 
-	void Table::Draw()
+	void SimpleTable::Draw()
 	{
 		ImGuiTableFlags Flags =
 			ImGuiTableFlags_Resizable
@@ -39,32 +39,11 @@ namespace LM
 					ImGui::PushID(i);
 					ImGui::TableNextRow();
 
-					auto ElementDrawableColumns = m_GetElement(i)->GetDrawableColumns();
-
-					if (ImGui::TableSetColumnIndex(0))
-					{
-						ElementDrawableColumns[0]();
-						ImGui::SameLine();
-						const ImGuiSelectableFlags SelectableFlags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
-						const bool IsSelected = m_SelectedId == i;
-						if (ImGui::Selectable("", IsSelected, SelectableFlags))
-						{
-							if (IsSelected)
-							{
-								m_SelectedId = -1;
-							}
-							else
-							{
-								m_SelectedId = i;
-							}
-						}
-					}
-
-					for (size_t j = 1; j < ElementDrawableColumns.size(); j++)
+					for (size_t j = 0; j < m_GetElementDraw.size(); j++)
 					{
 						if (ImGui::TableSetColumnIndex((int)j))
 						{
-							ElementDrawableColumns[j]();
+							m_GetElementDraw[j](i);
 						}
 					}
 

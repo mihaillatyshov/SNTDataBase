@@ -38,6 +38,11 @@ namespace LM
 		m_Homesteads[_HsId]->DeleteMembershipFeePayment(_PayId);
 	}
 
+	void DataBase::SetMembershipFeeOpeningBalance(size_t _HsId, const Money& _Money)
+	{
+		m_Homesteads[_HsId]->SetMembershipFeeOpeningBalance(_Money);
+	}
+
 	void DataBase::AddElectricityAccrual(size_t _HsId, Ref<const TabDataStruct> _TabDS)
 	{
 		m_Homesteads[_HsId]->AddElectricityAccrual(_TabDS);
@@ -46,7 +51,6 @@ namespace LM
 	void DataBase::EditElectricityAccrual(size_t _HsId, size_t _AccId, Ref<const TabDataStruct> _TabDS)
 	{
 		m_Homesteads[_HsId]->EditElectricityAccrual(_AccId, _TabDS);
-
 	}
 
 	void DataBase::DeleteElectricityAccrual(size_t _HsId, size_t _AccId)
@@ -67,6 +71,23 @@ namespace LM
 	void DataBase::DeleteElectricityPayment(size_t _HsId, size_t _PayId)
 	{
 		m_Homesteads[_HsId]->DeleteElectricityPayment(_PayId);
+	}
+
+	void DataBase::SetElectricityOpeningBalance(size_t _HsId, const Money& _Money)
+	{
+		m_Homesteads[_HsId]->SetElectricityOpeningBalance(_Money);
+	}
+
+	void DataBase::RecalculateMembershipFee()
+	{
+		for (auto& Hs : m_Homesteads)
+			Hs->RecalculateMembershipFee();
+	}
+
+	void DataBase::RecalculateElectricity()
+	{
+		for (auto& Hs : m_Homesteads)
+			Hs->RecalculateElectricity();
 	}
 
 }
