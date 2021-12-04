@@ -37,8 +37,8 @@ namespace LM
 		inline std::string_view     GetPatronymic()					const { return m_Data.Patronymic; }
 		inline std::string_view     GetPhoneNumber()				const { return m_Data.PhoneNumber; }
 		inline std::string_view     GetNote()						const { return m_Data.Note; }
-		inline bool                 HasElectricityPrivilege()		const { return m_Data.ElectricityPrivilege.HasPrivilege; }
-		inline bool                 HasMembershipFeesPrivilege()	const { return m_Data.MembershipFeePrivilege.HasPrivilege; }
+		inline bool                 HasElectricityPrivilege()		const { return m_Data.ElectricityPrivilege.GetHasPrivilege(); }
+		inline bool                 HasMembershipFeesPrivilege()	const { return m_Data.MembershipFeePrivilege.GetHasPrivilege(); }
 		inline const MembershipFee& GetMembershipFee()				const { return m_MembershipFee; }
 		inline const Electricity&	GetElectricity()				const { return m_Electricity; }
 
@@ -49,6 +49,7 @@ namespace LM
 		void SetMembershipFeeOpeningBalance(const Money& _Money);
 
 		void AddElectricityAccrual(Ref<const TabDataStruct> _TabDS);
+		void AddElectricityAccrual(const ElectricityAccrual& _Accrual);
 		void EditElectricityAccrual(size_t _AccId, Ref<const TabDataStruct> _TabDS);
 		void DeleteElectricityAccrual(size_t _AccId);
 
@@ -68,7 +69,7 @@ namespace LM
 
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);
-	public:
+	protected:
 		HomesteadData m_Data;
 
 		MembershipFee m_MembershipFee;

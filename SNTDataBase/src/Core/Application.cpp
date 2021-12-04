@@ -11,16 +11,18 @@
 #include <chrono>
 
 #include <imgui.h>
+#include <OpenXLSX.hpp>
 
 #include "LoaderUnloader/JsonLoaderUnloader.h"
+#include "LoaderUnloader/CsvReader.h"
 #include "Utils/Time.h"
+#include "Utils/ImGuiUtils.h"
 
 namespace fs = std::filesystem;
 
 namespace LM
 {
-	std::unordered_map<std::string, Application::ColumnsInfo*> Application::ColumnsInfo::ColumnsMap;
-
+	
 	Application::Application(GLFWwindow* _Window)
 		: m_IsEdit(false), m_Window(_Window)
 	{
@@ -29,9 +31,7 @@ namespace LM
 
 		CreateBackup("start");
 
-		LoadFile();
-
-		LoadColumns();
+		LoadDataBase();
 
 		m_HomesteadsTable = CreateRef<Table>
 		(
@@ -103,15 +103,23 @@ namespace LM
 		m_MembershipFeePaymentTabsCollection	= CreateRef<TabsCollection>(u8"платежа",	m_MembershipFeePaymentsTable);
 		m_ElectricityAccrualTabsCollection		= CreateRef<TabsCollection>(u8"начисления", m_ElectricityAccrualsTable);
 		m_ElectricityPaymentTabsCollection		= CreateRef<TabsCollection>(u8"платежа",	m_ElectricityPaymentsTable);
+
+		m_TabCsvSelector = CreateRef<TabCsvSelector>(m_DataBase);
+
+		Date D1("01.06.2000");
+		Date D2("1.10.2001");
+
+
+		std::istringstream Ostr("da12345");
+		int I1;
+		Ostr >> I1;
+		std::cout << "I1: " << I1 << std::endl;
 	}
 
 	Application::~Application()
 	{
-		SaveColumns();
 		CreateBackup("end");
 		SaveDataBase();
-
-		ColumnsInfo::Clear();
 	}
 
 	void Application::CreateBackup(std::string_view _Param)
@@ -144,59 +152,12 @@ namespace LM
 		}
 	}
 
-	void Application::LoadFile()
+	void Application::LoadDataBase()
 	{
 		m_DataBase = CreateRef<DataBase>();
 
 		JsonLoaderUnloader JSLU("JsDB.json", m_DataBase);
 		JSLU.Load();
-	}
-
-	void Application::LoadColumns()
-	{
-		ColumnsInfo::Add("MembershipFeeOpeningBalance", { u8"Номер участка", u8"ФИО", u8"Дата", u8"Начальное сальдо" });
-		ColumnsInfo::Add("ElectricityAdding", { u8"Дата", u8"Участок", u8"День", u8"Ночь", u8"Общее" });
-		ColumnsInfo::Add("ElectricityOpeningBalance", { u8"Номер участка", u8"ФИО", u8"Начальное сальдо" });
-
-		std::ifstream fin;
-		for (auto& [name, info] : ColumnsInfo::ColumnsMap)
-		{
-			fin.open(info->FileName.c_str());
-			if (fin.is_open())
-			{
-				fin.read((char*)&(info->Widths[0]), info->Names.size() * sizeof(float));
-				info->Update = true;
-				info->WidthLoaded = true;
-			}
-			else
-				std::cout << "Can't open file to read: " << info->FileName << std::endl;
-			fin.close();
-		}
-
-		int WindowWidth, WindowHeight;
-		glfwGetWindowSize(m_Window, &WindowWidth, &WindowHeight);
-	}
-
-	void Application::SaveColumns()
-	{
-		std::ofstream fout;
-
-		for (auto& [name, info] : ColumnsInfo::ColumnsMap)
-		{
-			std::cout << name << ": ";
-			for (int i = 0; i < info->Names.size(); i++)
-			{
-				std::cout << info->Widths[i] << " ";
-			}
-			std::cout << std::endl;
-
-			fout.open(info->FileName.c_str());
-			if (fout.is_open())
-				fout.write((char*)&(info->Widths[0]), info->Names.size() * sizeof(float));
-			else
-				std::cout << "Can't open file to write: " << info->FileName << std::endl;
-			fout.close();
-		}
 	}
 
 	void Application::Run()
@@ -210,25 +171,13 @@ namespace LM
 
 	void Application::OnResizeEvent()
 	{
-		for (auto& column : ColumnsInfo::ColumnsVector)
-			column->Update = true;
-		//HomesteadColumn.Update = true;
-		//MembershipFeeColumn.Update = true;
 	}
 
-	void Application::OnDropEvent(const std::string& filename)
+	void Application::OnDropEvent(const std::string& _FileName)
 	{
-		m_DropInfo = true;
-		m_DropInfoAccruals.clear();
+		m_TabCsvSelector->Open(_FileName);
 
-		m_ElectricityAccrualCostsIntermediate = ElectricityAccrualCosts();
-
-		//for (int i = 0; i < count; i++)
-		//{
-		//	std::cout << paths[i] << std::endl;
-		//}
-
-		std::cout << filename << std::endl;
+		std::cout << _FileName << std::endl;
 	}
 
 	void Application::DrawMenuBar()
@@ -344,7 +293,7 @@ namespace LM
 			DrawMembershipFeeOpeningBalance();
 			DrawElectricityOpeningBalance();
 
-			DrawDropEvent();
+			m_TabCsvSelector->Draw();
 
 			//if (ImGui::Begin("Tests"))
 			//{
@@ -353,85 +302,31 @@ namespace LM
 			//}
 			//ImGui::End();
 
-
 			ImGui::EndTabBar();
 		}
 		ImGui::End();
 
-		if (ImGui::Begin("Accruals"))
-		{
-			auto LocalTime = Time::GetLocalTime();
-			ImGui::Text("%d%02d%02d", LocalTime->tm_year, LocalTime->tm_mon, LocalTime->tm_mday);
-			if (ImGui::Button("Sort"))
-			{
-				std::sort(MembershipFee::s_Accruals.begin(), MembershipFee::s_Accruals.end(), [](const MembershipFeeAccrual& _First, const MembershipFeeAccrual& _Second)
-					{
-						return _First.m_Date < _Second.m_Date;
-					});
-			}
-			for (int i = 0; i < MembershipFee::s_Accruals.size(); i++)
-			{
-				ImGui::Text("%03d", i);
-				ImGui::SameLine();
-				MembershipFee::s_Accruals[i].m_Date.Draw();
-				ImGui::SameLine();
-				MembershipFee::s_Accruals[i].m_Money.Draw();
-			}
-		}
-		ImGui::End();
-	}
-
-	void Application::DrawRect(int colId, ColumnsInfo& column)
-	{
-		if (colId % 2)
-		{
-			ImGui::Columns(1);
-
-			ImDrawList* draw_list = ImGui::GetWindowDrawList();
-			int sz = 16 + 4;
-			const ImVec2 p = ImGui::GetCursorScreenPos();
-			const ImU32 col32 = 0xffdddddd;
-			float x = p.x - 24, y = p.y - 3;
-			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + 9000 + 48, y + sz), col32);
-
-			ImGui::Columns((int)column.Names.size(), column.Name.c_str(), false);
-		}
-	}
-
-	void Application::DrawRectBig(int colId, ColumnsInfo& column)
-	{
-		if (colId % 2)
-		{
-			ImGui::Columns(1);
-
-			ImDrawList* draw_list = ImGui::GetWindowDrawList();
-			int sz = 26;
-			const ImVec2 p = ImGui::GetCursorScreenPos();
-			const ImU32 col32 = 0xffdddddd;
-			float x = p.x - 24, y = p.y - 2;
-			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + 9000 + 48, y + sz), col32);
-
-			ImGui::Columns((int)column.Names.size(), column.Name.c_str(), false);
-		}
-	}
-
-	bool Application::InputTextString(std::string_view name, std::string& data, float itemWidth, ImGuiInputTextFlags_ flag)
-	{
-		if (itemWidth)
-			ImGui::PushItemWidth(itemWidth);
-
-		size_t Size = data.size() + 128;
-
-		char* CharBufferNumber = new char[Size] { 0 };
-		memcpy(CharBufferNumber, data.data(), data.size());
-		bool isStringEdited = ImGui::InputText(name.data(), CharBufferNumber, Size, flag);
-		data = CharBufferNumber;
-		delete[] CharBufferNumber;
-
-		if (itemWidth)
-			ImGui::PopItemWidth();
-
-		return isStringEdited;
+		//if (ImGui::Begin("Accruals"))
+		//{
+		//	auto LocalTime = Time::GetLocalTime();
+		//	ImGui::Text("%d%02d%02d", LocalTime->tm_year, LocalTime->tm_mon, LocalTime->tm_mday);
+		//	if (ImGui::Button("Sort"))
+		//	{
+		//		std::sort(MembershipFee::s_Accruals.begin(), MembershipFee::s_Accruals.end(), [](const MembershipFeeAccrual& _First, const MembershipFeeAccrual& _Second)
+		//			{
+		//				return _First.m_Date < _Second.m_Date;
+		//			});
+		//	}
+		//	for (int i = 0; i < MembershipFee::s_Accruals.size(); i++)
+		//	{
+		//		ImGui::Text("%03d", i);
+		//		ImGui::SameLine();
+		//		MembershipFee::s_Accruals[i].m_Date.Draw();
+		//		ImGui::SameLine();
+		//		MembershipFee::s_Accruals[i].m_Money.Draw();
+		//	}
+		//}
+		//ImGui::End();
 	}
 
 	void Application::DrawHomesteads()
@@ -573,9 +468,11 @@ namespace LM
 		{
 			ImGui::Text(u8"Количество участков: %d", m_DataBase->GetHomesteadsCount());
 
-			Date& date = OpeningBalance::s_Date;
-
-			date.DrawEdit();
+			Date date = OpeningBalance::GetDate();
+			if (date.DrawEdit())
+			{
+				OpeningBalance::SetDate(date);
+			}
 
 			m_MembershipFeeOpeningBalanceTable->Draw();
 
@@ -597,14 +494,8 @@ namespace LM
 				ImGui::OpenPopup(u8"Начисления для добавления##Членские взносы");
 			}
 		}
-		ImGuiViewport* Viewport = ImGui::GetMainViewport();
-		ImVec2 WindowSize = ImVec2(800, 500);
-		ImVec2 Distance = ImVec2(Viewport->Size.x / 2, Viewport->Size.y / 2);
-		ImVec2 WindowPos = ImVec2(Viewport->Pos.x + Distance.x - WindowSize.x / 2, Viewport->Pos.y + Distance.y - WindowSize.y / 2);
-		ImGui::SetNextWindowPos(WindowPos);
-		ImGui::SetNextWindowSize(WindowSize);
-		ImGui::SetNextWindowViewport(Viewport->ID);
 
+		ImGuiPrepareCenteredPopup(800.0f, 500.0f);
 		if (ImGui::BeginPopupModal(u8"Начисления для добавления##Членские взносы", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
 		{
 			ImGui::Text(u8"Отсутствующие начисления членских взносов для всех участков:");
@@ -613,8 +504,7 @@ namespace LM
 			for (int i = 0; i < AccrualsToAdd.size(); i++)
 			{
 				ImGui::PushID(i);
-				AccrualsToAdd[i].m_Date.Draw();
-				AccrualsToAdd[i].m_Money.DrawEdit("");
+				AccrualsToAdd[i].DrawEdit();
 				ImGui::SameLine();
 				if (ImGui::Button(u8"Добавить"))
 				{
@@ -670,8 +560,6 @@ namespace LM
 			//}
 
 			ImGui::TextUnformatted(u8"Первое начисление является начальным сальдо!");
-
-			auto& homestead = m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
 
 			if (ImGui::Button(u8"Добавить начисление"))
 			{
@@ -729,20 +617,19 @@ namespace LM
 			//	return;
 			//}
 
-			Homestead& homestead = *m_DataBase->m_Homesteads[m_HomesteadsTable->GetSelectedId()];
+			auto Hs = m_DataBase->GetHomestead(m_HomesteadsTable->GetSelectedId());
 
 			auto LocalTime = Time::GetLocalTime();
 
-			Money& Amount = homestead.m_Electricity.m_All;
-			if (Amount < 0)
+			if (Hs->GetElectricity().GetAll() < 0)
 			{
 				ImGui::Text(u8"Переплата на %02d.%02d.%d:", LocalTime->tm_mday, 1 + LocalTime->tm_mon, 1900 + LocalTime->tm_year); ImGui::SameLine();
-				Amount.DrawAbs();
+				Hs->GetElectricity().GetAll().DrawAbs();
 			}
 			else
 			{
 				ImGui::Text(u8"Долг на %02d.%02d.%d:", LocalTime->tm_mday, 1 + LocalTime->tm_mon, 1900 + LocalTime->tm_year); ImGui::SameLine();
-				Amount.DrawAbs();
+				Hs->GetElectricity().GetAll().DrawAbs();
 			}
 			if (ImGui::Button(u8"Добавить платеж"))
 			{
@@ -784,279 +671,143 @@ namespace LM
 		}
 	}
 
-	void Application::RecalculateElectricityAccruals()
-	{
-		for (auto& homestead : m_DataBase->m_Homesteads)
-		{
-			homestead->m_Electricity.Recalculate(homestead->m_Data.ElectricityPrivilege.HasPrivilege);
-		}
-	}
-
-	void Application::DrawDropEvent()
-	{
-		if (m_DropInfo)
-		{
-			DrawEditTariffOnLoad();
-			if (ImGui::BeginTabItem(u8"Добавление показаний электроэнергии"))
-			{
-				ColumnsInfo& column = *ColumnsInfo::ColumnsMap["ElectricityAdding"];
-
-				if (ImGui::Button(u8"Сохранить в базе"))
-				{
-					for (auto& homestead : m_DataBase->m_Homesteads)
-					{
-						for (auto& accrualInfo : m_DropInfoAccruals)
-						{
-							auto& [name, accrual] = accrualInfo;
-							if (homestead->m_Data.Number == name)
-							{
-								accrual.m_Data.Costs = m_ElectricityAccrualCostsIntermediate;
-								homestead->m_Electricity.m_Accruals.push_back(CreateRef<ElectricityAccrual>(accrual));
-								break;
-							}
-						}
-					}
-					m_DropInfo = false;
-					RecalculateElectricityAccruals();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button(u8"Отмена"))
-				{
-					m_DropInfo = false;
-				}
-				if (ImGui::Button(u8"Изменение констант и тарифов"))
-				{
-					m_EditTariffOnLoad = true;
-					//DrawEditTariffOnLoad();
-				}
-				// Сохранить в базе
-				// Отмена
-
-				//if (m_DropInfoAccruals.size() > 0)
-				//{
-				//	auto& [number, accrual] = m_DropInfoAccruals[0];
-				//	ImGui::Text("%02d.%02d.%d", accrual.m_Date.Day, accrual.m_Date.Month, accrual.m_Date.Year);
-				//}
-
-				ImGui::Columns((int)column.Names.size(), column.Name.c_str(), true);
-				ImGui::Separator();
-				//static bool Init = true;
-				if (column.Update)
-				{
-					if (column.WidthLoaded)
-					{
-						for (int i = 0; i < column.Names.size() - 1; i++)
-						{
-							ImGui::SetColumnWidth(i, column.Widths[i]);
-							std::cout << column.Widths[i] << " ";
-						}
-						std::cout << column.Widths[column.Names.size() - 1] << "\n";
-						column.Update = false;
-					}
-					else
-					{
-						column.WidthLoaded = true;
-					}
-				}
-
-				column.DrawNames();
-
-				ImGui::Separator();
-				ImGui::Columns(1);
-				ImGui::BeginChild(column.Name.c_str(), ImVec2(0, 0), false);
-				ImGui::Columns((int)column.Names.size(), column.Name.c_str(), false);
-				for (int i = 0; i < column.Names.size() - 1; i++)
-				{
-					ImGui::SetColumnWidth(i, column.Widths[i]);
-				}
-
-				for (int i = 0; i < m_DropInfoAccruals.size(); i++)
-				{
-					DrawRect(i, column);
-
-					ImGui::PushID(i);
-
-					//Homestead& homestead = m_DataBase->GetHomesteads()[SelectedHomestead];
-					//ElectricityAccrual& electricityAccrual = m_DataBase->GetHomesteads()[SelectedHomestead].m_Electricity.m_Accruals[i];
-					auto& [number, accrual] = m_DropInfoAccruals[i];
-
-					////////////////////////////////////////////////////////////////////////
-					//////// 1 /////////////////////////////////////////////////////////////
-					////////////////////////////////////////////////////////////////////////
-					//ImGui::Text("%02d.%02d.%d", accrual.m_Date.Day, accrual.m_Date.Month, accrual.m_Date.Year);
-					accrual.m_Data.Date.Draw();
-					ImGui::NextColumn();
-
-					ImGui::Text(number.c_str());
-					ImGui::NextColumn();
-
-					////////////////////////////////////////////////////////////////////////
-					//////// 2 /////////////////////////////////////////////////////////////
-					////////////////////////////////////////////////////////////////////////
-					accrual.m_Data.Day.Draw();
-					ImGui::NextColumn();
-
-					////////////////////////////////////////////////////////////////////////
-					//////// 3 /////////////////////////////////////////////////////////////
-					////////////////////////////////////////////////////////////////////////
-					accrual.m_Data.Night.Draw();
-					ImGui::NextColumn();
-
-					////////////////////////////////////////////////////////////////////////
-					//////// 4 /////////////////////////////////////////////////////////////
-					////////////////////////////////////////////////////////////////////////
-					ImGui::Text("%lld.%03lld", accrual.GetAllMonth().m_Watt / 1000, accrual.GetAllMonth().m_Watt % 1000);
-					ImGui::NextColumn();
-
-					ImGui::PopID();
-				}
-				ImGui::Columns(1);
-				ImGui::EndChild();
-				ImGui::EndTabItem();
-			}
-		}
-	}
-
-	void Application::DrawEditTariffOnLoad()
-	{
-		if (m_EditTariffOnLoad && ImGui::BeginTabItem(u8"Изменение тарифа##OnLoad", &m_EditTariffOnLoad))
-		{
-			m_ElectricityAccrualCostsIntermediate.m_Day.DrawEdit(u8"Дневной тариф");
-			m_ElectricityAccrualCostsIntermediate.m_Night.DrawEdit(u8"Ночной тариф");
-
-			for (int i = 0; i < m_ElectricityAccrualCostsIntermediate.m_Others.size(); i++)
-			{
-				ImGui::PushID(i);
-				ImGui::Separator();
-				auto& [name, money] = m_ElectricityAccrualCostsIntermediate.m_Others[i];
-				money.DrawEdit("##Sum"); ImGui::SameLine();
-				//ImGui::Text(name.c_str());
-				InputTextString("##Name", name, 250);
-				if (ImGui::Button(u8"Удалить константку"))
-				{
-					m_ElectricityAccrualCostsIntermediate.m_Others.erase(m_ElectricityAccrualCostsIntermediate.m_Others.begin() + i);
-					i--;
-				}
-				ImGui::PopID();
-			}
-			ImGui::Separator();
-			if (ImGui::Button(u8"Добавить константу"))
-			{
-				m_ElectricityAccrualCostsIntermediate.m_Others.push_back({ "<NONE>", Money() });
-			}
-
-			if (ImGui::Button("Ok"))
-			{
-				m_EditTariffOnLoad = false;
-			}
-
-			ImGui::EndTabItem();
-		}
-
-	}
-
 	void Application::SaveDataBase()
 	{
 		JsonLoaderUnloader jslu("JsDB.json", m_DataBase);
 		jslu.Unload();
-
-		//Unloader_v2* unloader = Unloader_v2::Create();
-		//unloader->HandleDataBase(m_DataBase);
 	}
 
 	void Application::SaveElectricityCSV()
 	{
-		std::ofstream fout;
-		fout.open("Electricity.csv");
-
-		const std::string SepCSV = ",";
-
-		if (!fout.is_open())
-		{
-			std::cout << "Error: Can't Save file!: " << "Electricity.csv" << std::endl;
+		std::ofstream Fout("Electricity.csv");
+		if (!Fout.is_open())
 			return;
-		}
-		std::cout << "File ok! Saving file..." << std::endl;
-		for (auto& homestead : m_DataBase->m_Homesteads)
+
+		const std::string SepCSV = ";";
+
+		Fout << u8"Номер участка" << SepCSV << u8"КВт за все время Общее" << SepCSV << u8"КВт за все время День" << SepCSV << u8"КВт за все время Ночь" << SepCSV;
+		Fout << u8"КВт за последий месяц Общее" << SepCSV << u8"КВт за последий месяц День" << SepCSV << u8"КВт за последий месяц Ночь" << SepCSV;
+
+		for (size_t i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
 		{
-			if (homestead->m_Electricity.m_Accruals.size() < 2)
+			const auto& Hs = m_DataBase->GetHomestead(i);
+			const auto& El = Hs->GetElectricity();
+			
+			if (El.GetAccrualsCount() < 2)
 				continue;
 
-			auto& accruals = homestead->m_Electricity.m_Accruals;
-			auto& accrualBack = accruals.back();
-			auto& accrualPrev = accruals[accruals.size() - 2];
-			fout << homestead->m_Data.Number << SepCSV;
-			fout << accrualBack->GetAllMonth() << SepCSV;
-			fout << accrualBack->m_Data.Day << SepCSV;
-			fout << accrualBack->m_Data.Night << SepCSV;
+			Fout << Hs->GetNumber()			<< SepCSV;			// Write homestead number
 
-			// Разница показаний кВт
-			KiloWatt dayKW = accrualBack->m_Data.Day - accrualPrev->m_Data.Day;
-			KiloWatt nightKW = accrualBack->m_Data.Night - accrualPrev->m_Data.Night;
-			KiloWatt monthKW = dayKW + nightKW;
+			const auto& AccLast = El.GetAccrual(El.GetAccrualsCount() - 1);
+			const auto& AccPreLast = El.GetAccrual(El.GetAccrualsCount() - 2);
 
-			fout << monthKW << SepCSV;
-			fout << dayKW << SepCSV;
-			fout << nightKW << SepCSV;
+			Fout << AccLast->GetAllMonth()	<< SepCSV;			// Write accrual KW (All full monthes)
+			Fout << AccLast->GetDay()		<< SepCSV;			// Write accrual KW (All days)
+			Fout << AccLast->GetNight()		<< SepCSV;			// Write accrual KW (All nights)
 
-			// Начислено РУБ
-			Money fullSum;
-			Money calcDay = Electricity::CalcMonthMoney(dayKW.m_Watt, accrualBack->m_Data.Costs.m_Day);
-			Money calcNight = Electricity::CalcMonthMoney(nightKW.m_Watt, accrualBack->m_Data.Costs.m_Night);
-			Money calcLosses = Electricity::CalcLosses(calcDay, calcNight);
-			calcDay = Electricity::CalcWithBenefits(calcDay, Money(), false /* Homestead benefits 70% */);
-			calcNight = Electricity::CalcWithBenefits(calcNight, Money(), false /* Homestead benefits 70% */);
-			Money calcMonth = calcDay + calcNight;
-			fullSum = calcMonth + calcLosses;
+			// Last accruals difference
+			KiloWatt DayKW		= AccLast->GetDay()		- AccPreLast->GetDay();
+			KiloWatt NightKW	= AccLast->GetNight()	- AccPreLast->GetNight();
+			
+			Fout << DayKW + NightKW << SepCSV;					// Write accrual KW (Last full monthes)
+			Fout << DayKW			<< SepCSV;					// Write accrual KW (Last days)
+			Fout << NightKW			<< SepCSV;					// Write accrual KW (Last nights)
 
-			fout << calcDay << SepCSV;
-			fout << calcNight << SepCSV;
-			fout << calcMonth << SepCSV;
-			fout << calcLosses << SepCSV;
-			for (auto& [name, money] : accrualBack->m_Data.Costs.m_Others)
-			{
-				fout << money << SepCSV;
-				fullSum += money;
-			}
 
-			Money sumToDate = homestead->m_Electricity.CalcAccrualsToDate(accrualPrev->m_Data.Date, homestead->m_Data.ElectricityPrivilege.HasPrivilege);
-			fullSum += sumToDate;
-
-			fout << sumToDate << SepCSV;
-			fout << fullSum << SepCSV;
-
-			bool Payed = false;
-			Payment LastPay;
-			for (auto& payment : homestead->m_Electricity.m_Payments)
-			{
-				if (payment->m_Data.Date > accrualPrev->m_Data.Date && payment->m_Data.Date <= accrualBack->m_Data.Date)
-				{
-					Payed = true;
-					LastPay.m_Data.Amount += payment->m_Data.Amount;
-					LastPay.m_Data.Date = payment->m_Data.Date;
-				}
-			}
-
-			if (Payed)
-			{
-				fout << LastPay.m_Data.Date.GetString() << SepCSV;
-				fout << LastPay.m_Data.Amount << SepCSV;
-			}
-			else
-			{
-				fout << SepCSV << SepCSV;
-			}
-
-			fout << fullSum - LastPay.m_Data.Amount << std::endl;
-
-			std::cout << homestead->m_Electricity.CalcAccrualsToDate(accrualBack->m_Data.Date, homestead->m_Data.ElectricityPrivilege.HasPrivilege) << std::endl;
 		}
 
-		std::cout << "File Saved!" << std::endl;
 
-		fout << "Test message! " << std::endl;
-
-		fout.close();
+		//std::ofstream fout;
+		//fout.open("Electricity.csv");
+		//
+		//const std::string SepCSV = ";";
+		//
+		//if (!fout.is_open())
+		//{
+		//	std::cout << "Error: Can't Save file!: " << "Electricity.csv" << std::endl;
+		//	return;
+		//}
+		//std::cout << "File ok! Saving file..." << std::endl;
+		//for (auto& homestead : m_DataBase->m_Homesteads)
+		//{
+		//	if (homestead->m_Electricity.m_Accruals.size() < 2)
+		//		continue;
+		//
+		//	auto& accruals = homestead->m_Electricity.m_Accruals;
+		//	auto& accrualBack = accruals.back();
+		//	auto& accrualPrev = accruals[accruals.size() - 2];
+		//	fout << homestead->m_Data.Number << SepCSV;
+		//	fout << accrualBack->GetAllMonth() << SepCSV;
+		//	fout << accrualBack->m_Data.Day << SepCSV;
+		//	fout << accrualBack->m_Data.Night << SepCSV;
+		//
+		//	// Разница показаний кВт
+		//	KiloWatt dayKW = accrualBack->m_Data.Day - accrualPrev->m_Data.Day;
+		//	KiloWatt nightKW = accrualBack->m_Data.Night - accrualPrev->m_Data.Night;
+		//	KiloWatt monthKW = dayKW + nightKW;
+		//
+		//	fout << monthKW << SepCSV;
+		//	fout << dayKW << SepCSV;
+		//	fout << nightKW << SepCSV;
+		//
+		//	// Начислено РУБ
+		//	Money fullSum;
+		//	Money calcDay = Electricity::CalcMonthMoney(dayKW.m_Watt, accrualBack->m_Data.Costs.m_Day);
+		//	Money calcNight = Electricity::CalcMonthMoney(nightKW.m_Watt, accrualBack->m_Data.Costs.m_Night);
+		//	Money calcLosses = Electricity::CalcLosses(calcDay, calcNight);
+		//	calcDay = Electricity::CalcWithBenefits(calcDay, Money(), false /* Homestead benefits 70% */);
+		//	calcNight = Electricity::CalcWithBenefits(calcNight, Money(), false /* Homestead benefits 70% */);
+		//	Money calcMonth = calcDay + calcNight;
+		//	fullSum = calcMonth + calcLosses;
+		//
+		//	fout << calcMonth << SepCSV;
+		//	fout << calcDay << SepCSV;
+		//	fout << calcNight << SepCSV;
+		//	fout << calcLosses << SepCSV;
+		//	for (auto& [name, money] : accrualBack->m_Data.Costs.m_Others)
+		//	{
+		//		fout << money << SepCSV;
+		//		fullSum += money;
+		//	}
+		//
+		//	Money sumToDate = homestead->m_Electricity.CalcAccrualsToDate(accrualPrev->m_Data.Date, homestead->m_Data.ElectricityPrivilege.HasPrivilege);
+		//	fullSum += sumToDate;
+		//
+		//	fout << sumToDate << SepCSV;
+		//	fout << fullSum << SepCSV;
+		//
+		//	bool Payed = false;
+		//	Payment LastPay;
+		//	for (auto& payment : homestead->m_Electricity.m_Payments)
+		//	{
+		//		if (payment->m_Data.Date > accrualPrev->m_Data.Date && payment->m_Data.Date <= accrualBack->m_Data.Date)
+		//		{
+		//			Payed = true;
+		//			LastPay.m_Data.Amount += payment->m_Data.Amount;
+		//			LastPay.m_Data.Date = payment->m_Data.Date;
+		//		}
+		//	}
+		//
+		//	if (Payed)
+		//	{
+		//		fout << LastPay.m_Data.Date.GetString() << SepCSV;
+		//		fout << LastPay.m_Data.Amount << SepCSV;
+		//	}
+		//	else
+		//	{
+		//		fout << SepCSV << SepCSV;
+		//	}
+		//
+		//	fout << fullSum - LastPay.m_Data.Amount << std::endl;
+		//
+		//	std::cout << homestead->m_Electricity.CalcAccrualsToDate(accrualBack->m_Data.Date, homestead->m_Data.ElectricityPrivilege.HasPrivilege) << std::endl;
+		//}
+		//
+		//std::cout << "File Saved!" << std::endl;
+		//
+		//fout << "Test message! " << std::endl;
+		//
+		//fout.close();
 	}
 
 	void Application::SavePaymentsToDateCSV(const Date& date)
@@ -1070,38 +821,38 @@ namespace LM
 
 	void Application::SaveMembershipToCSV(const Date& date)
 	{
-		std::string fileName = "MembershipFeeDebt" + date.GetString() + ".csv";
-
-		std::ofstream fout;
-		fout.open(fileName);
-
-		if (!fout.is_open())
-		{
-			std::cout << "Error: Can't Save file!: " << fileName << std::endl;
-			return;
-		}
-		std::cout << "File ok! Saving file..." << std::endl;
-
-		for (auto& homestead : m_DataBase->m_Homesteads)
-		{
-			fout << homestead->m_Data.Number << ";";
-			Money EndSum = homestead->m_MembershipFee.m_OpeningBalance.m_Money;
-			for (auto& accrual : homestead->m_MembershipFee.s_Accruals)
-			{
-				if (accrual.m_Date > date)
-					break;
-				EndSum += accrual.m_Money;
-			}
-			for (auto& payment : homestead->m_MembershipFee.m_Payments)
-			{
-				if (payment->m_Data.Date > date)
-					break;
-				EndSum -= payment->m_Data.Amount;
-			}
-		}
-
-		std::cout << "File Saved!" << std::endl;
-		fout.close();
+		//std::string fileName = "MembershipFeeDebt" + date.GetString() + ".csv";
+		//
+		//std::ofstream fout;
+		//fout.open(fileName);
+		//
+		//if (!fout.is_open())
+		//{
+		//	std::cout << "Error: Can't Save file!: " << fileName << std::endl;
+		//	return;
+		//}
+		//std::cout << "File ok! Saving file..." << std::endl;
+		//
+		//for (auto& homestead : m_DataBase->m_Homesteads)
+		//{
+		//	fout << homestead->m_Data.Number << ";";
+		//	Money EndSum = homestead->m_MembershipFee.m_OpeningBalance.m_Money;
+		//	for (auto& accrual : homestead->m_MembershipFee.s_Accruals)
+		//	{
+		//		if (accrual.m_Date > date)
+		//			break;
+		//		EndSum += accrual.m_Money;
+		//	}
+		//	for (auto& payment : homestead->m_MembershipFee.m_Payments)
+		//	{
+		//		if (payment->m_Data.Date > date)
+		//			break;
+		//		EndSum -= payment->m_Data.Amount;
+		//	}
+		//}
+		//
+		//std::cout << "File Saved!" << std::endl;
+		//fout.close();
 	}
 
 	void Application::DrawElectricityOpeningBalance()

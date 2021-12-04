@@ -15,10 +15,17 @@ namespace LM
 		ElectricityAccrualCosts(const Money& _Day, const Money& _Night, const std::vector<OtherElectricityAccrualCost> _Constants)
 			: m_Day(_Day), m_Night(_Night), m_Others(_Constants) { }
 
+		bool DrawEdit();
+		
+		inline const Money& GetDay()	const { return m_Day; }
+		inline const Money& GetNight()	const { return m_Night; }
+		
+		const Money& GetOthersSum() const;
+
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);
 
-	public:
+	protected:
 		Money m_Day	  = Money(6, 57);
 		Money m_Night = Money(4, 13);
 

@@ -18,8 +18,14 @@ namespace LM
 	public:
 		ElectricityAccrual() = default;
 		ElectricityAccrual(Ref<const TabDataStruct> _TabDS);
+		ElectricityAccrual(ElectricityAccrualData _Data);
 
 		void Edit(Ref<const TabDataStruct> _TabDS);
+
+		inline const Date& GetDate()						const { return m_Data.Date; }
+		inline const KiloWatt& GetDay()						const { return m_Data.Day; }
+		inline const KiloWatt& GetNight()					const { return m_Data.Night; }
+		inline const ElectricityAccrualCosts& GetCosts()	const { return m_Data.Costs; }
 
 		inline KiloWatt GetAllMonth() const { return m_Data.Day + m_Data.Night; }
 
@@ -29,7 +35,7 @@ namespace LM
 
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);
-	public:
+	protected:
 		ElectricityAccrualData m_Data;
 	};
 

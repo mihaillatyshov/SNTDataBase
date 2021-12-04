@@ -8,6 +8,12 @@ namespace LM
 		m_Data = std::static_pointer_cast<const ElectricityAccrualTabDS>(_TabDS)->GetData();
 	}
 
+	ElectricityAccrual::ElectricityAccrual(ElectricityAccrualData _Data)
+		: m_Data(_Data)
+	{
+
+	}
+
 	void ElectricityAccrual::Edit(Ref<const TabDataStruct> _TabDS)
 	{
 		m_Data = std::static_pointer_cast<const ElectricityAccrualTabDS>(_TabDS)->GetData();

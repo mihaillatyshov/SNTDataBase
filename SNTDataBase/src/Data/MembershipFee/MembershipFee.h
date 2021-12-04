@@ -1,11 +1,13 @@
 #pragma once
 
 #include <vector>
-#include "../Payment/Payment.h"
-#include "OpeningBalance.h"
-#include "MembershipFeeAccrual/MembershipFeeAccrual.h"
+
 #include <nlohmann/json.hpp>
+
 #include "Core/Base.h"
+#include "OpeningBalance.h"
+#include "Accrual/MembershipFeeAccrual.h"
+#include "Data/Payment/Payment.h"
 #include "Data//Homestead/Privilege/Privilege.h"
 
 namespace LM
@@ -18,8 +20,8 @@ namespace LM
 
 		inline const Money& GetDebt() const { return m_Debt; }
 		
-		inline const Money& GetOpeningBalance() const { return m_OpeningBalance.m_Money; }
-		inline void SetOpeningBalance(const Money& _Money) { m_OpeningBalance.m_Money = _Money; }
+		inline const Money& GetOpeningBalance() const { return m_OpeningBalance.GetMoney(); }
+		inline void SetOpeningBalance(const Money& _Money) { m_OpeningBalance.SetMoney(_Money); }
 
 		inline const Ref<const Payment> GetPayment(size_t _Id) const { return m_Payments[_Id]; }
 		inline size_t GetPaymentsCount() const { return m_Payments.size(); }
@@ -36,11 +38,12 @@ namespace LM
 
 		void Recalculate(const Privilege& _Privilege);
 
-		
-
 		nlohmann::basic_json<> GetJson() const;
-		void SetJson(nlohmann::basic_json<> js);
-	public:
+		void SetJson(nlohmann::basic_json<> _JS);
+
+		static nlohmann::basic_json<> GetAccrualsJson();
+		static void SetAccrualsJson(nlohmann::basic_json<> _JS, std::string_view _Name);
+	protected:
 		Money m_Debt;
 		OpeningBalance m_OpeningBalance;
 

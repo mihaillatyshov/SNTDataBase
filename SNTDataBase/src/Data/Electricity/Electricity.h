@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <vector>
+
 #include <nlohmann/json.hpp>
 
+#include "Core/Base.h"
 #include "Accrual/ElectricityAccrual.h"
 #include "Data/Payment/Payment.h"
-#include "Core/Base.h"
+#include "Data/Homestead/Privilege/Privilege.h"
 
 namespace LM
 {
@@ -16,20 +18,21 @@ namespace LM
 	public:
 		Electricity() = default;
 
-		void Recalculate(bool _HasBenefits);
+		void Recalculate(const Privilege& _Privilege);
 		void SortAccruals();
 		void SortPayments();
 		void Sort();
 
-		static Money CalcMonthMoney(int64_t _Watt, const Money& _Cost);
-		static Money CalcPercent(Money _Money, int _Percent);
 		static Money CalcLosses(const Money& _Day, const Money& _Night);
 		static Money CalcWithBenefits(const Money& _Day, const Money& _Night, bool _HasBenefits);
-		Money CalcAccrualsToDate(const Date& _Date, bool _HasBenefits); // Include this Date
+		Money CalcAccrualsToDate(const Date& _Date, const Privilege& _Privilege); // Include this Date
+
+		const Money& CalcAccrual(size_t _AccId, const Privilege& _Privilege);
 
 		inline const Ref<const ElectricityAccrual> GetAccrual(size_t _Id) const { return m_Accruals[_Id]; }
 		size_t GetAccrualsCount() const { return m_Accruals.size(); }
 		void AddAccrual(Ref<const TabDataStruct> _TabDS);
+		void AddAccrual(const ElectricityAccrual& _Accrual);
 		void EditAccrual(size_t _AccId, Ref<const TabDataStruct> _TabDS);
 		void DeleteAccrual(size_t _AccId);
 
@@ -47,7 +50,7 @@ namespace LM
 
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);
-	public:
+	protected:
 		Money							m_All;
 		Money							m_OpeningBalance;
 		VectorRef<Payment>				m_Payments;

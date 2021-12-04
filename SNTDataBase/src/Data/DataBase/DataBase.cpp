@@ -1,5 +1,7 @@
 #include "DataBase.h"
 
+#include "Utils/JsonUtils.h"
+
 namespace LM
 {
 
@@ -48,6 +50,11 @@ namespace LM
 		m_Homesteads[_HsId]->AddElectricityAccrual(_TabDS);
 	}
 
+	void DataBase::AddElectricityAccrual(size_t _HsId, const ElectricityAccrual& _Accrual)
+	{
+		m_Homesteads[_HsId]->AddElectricityAccrual(_Accrual);
+	}
+
 	void DataBase::EditElectricityAccrual(size_t _HsId, size_t _AccId, Ref<const TabDataStruct> _TabDS)
 	{
 		m_Homesteads[_HsId]->EditElectricityAccrual(_AccId, _TabDS);
@@ -88,6 +95,23 @@ namespace LM
 	{
 		for (auto& Hs : m_Homesteads)
 			Hs->RecalculateElectricity();
+	}
+
+	nlohmann::basic_json<> DataBase::GetJson() const
+	{
+		nlohmann::basic_json<> Result;
+	
+		Result["Homesteads"] = nlohmann::GetVector(m_Homesteads);
+		
+		return Result;
+	}
+
+	void DataBase::SetJson(nlohmann::basic_json<> _JS)
+	{
+		if (!_JS.is_object())
+			return;
+
+		nlohmann::SetVector(m_Homesteads, _JS, "Homesteads");
 	}
 
 }

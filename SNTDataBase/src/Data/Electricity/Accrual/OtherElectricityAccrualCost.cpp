@@ -1,9 +1,21 @@
 #include "OtherElectricityAccrualCost.h"
 
 #include "Utils/JsonUtils.h"
+#include "Utils/ImGuiUtils.h"
 
 namespace LM
 {
+
+	bool OtherElectricityAccrualCost::DrawEdit()
+	{
+		ImGuiDirtyDecorator DirtyDecorator;
+
+		DirtyDecorator(m_Money.DrawEdit("##Sum"));
+		ImGui::SameLine();
+		DirtyDecorator(ImGuiInputTextString("##Name", m_Name, 250));
+
+		return DirtyDecorator;
+	}
 
 	nlohmann::basic_json<> OtherElectricityAccrualCost::GetJson() const
 	{

@@ -36,7 +36,7 @@ namespace LM
 	{
 		std::sort(s_Accruals.begin(), s_Accruals.end(), [](const MembershipFeeAccrual& _First, const MembershipFeeAccrual& _Second)
 			{
-				return _First.m_Date < _Second.m_Date;
+				return _First.GetDate() < _Second.GetDate();
 			});
 	}
 
@@ -51,7 +51,7 @@ namespace LM
 		s_Accruals.erase(std::find_if(s_Accruals.begin(), s_Accruals.end(), 
 			[=](const MembershipFeeAccrual& _Accrual) 
 			{
-				return _Accrual.m_Date == _Date;
+				return _Accrual.GetDate() == _Date;
 			})
 		);
 		SortAccruals();
@@ -64,15 +64,15 @@ namespace LM
 
 		int NowYear = 1900 + LocalTime->tm_year;
 		int NowMonth = 1 + LocalTime->tm_mon;
-		int Size = (NowYear - OpeningBalance::s_Date.m_Year) * 12 - OpeningBalance::s_Date.m_Month + NowMonth;
-		Date CheckDate(OpeningBalance::s_Date.GetYear(), OpeningBalance::s_Date.GetMonth());
+		int Size = (NowYear - OpeningBalance::GetDate().GetYear()) * 12 - OpeningBalance::GetDate().GetMonth() + NowMonth;
+		Date CheckDate(OpeningBalance::GetDate().GetYear(), OpeningBalance::GetDate().GetMonth());
 		for (int i = 0; i < Size; i++)
 		{
 			CheckDate.IncMonth();
 			if (std::find_if(s_Accruals.begin(), s_Accruals.end(),
-				[=](const MembershipFeeAccrual& _Acc) { return _Acc.m_Date == CheckDate; }) == s_Accruals.end())
+				[=](const MembershipFeeAccrual& _Acc) { return _Acc.GetDate() == CheckDate; }) == s_Accruals.end())
 			{
-				_AccrualsToAdd.push_back(MembershipFeeAccrual(CheckDate, MembershipFeeAccrual::MembershipFeeAmount));
+				_AccrualsToAdd.push_back(MembershipFeeAccrual(CheckDate, MembershipFeeAccrual::GetConstantAmount()));
 			}
 		}
 	}
@@ -82,11 +82,11 @@ namespace LM
 		_AccrualsToDelete.clear();
 		for (int i = 0; i < s_Accruals.size(); i++)
 		{
-			std::cout << "Accrual check " << i << ": " << s_Accruals[i].m_Date.GetString() << " " << OpeningBalance::s_Date.GetString();
-			if (s_Accruals[i].m_Date <= OpeningBalance::s_Date)
+			std::cout << "Accrual check " << i << ": " << s_Accruals[i].GetDate().GetString() << " " << OpeningBalance::GetDate().GetString();
+			if (s_Accruals[i].GetDate() <= OpeningBalance::GetDate())
 			{
 				std::cout << " need to delete";
-				_AccrualsToDelete.push_back(s_Accruals[i].m_Date);
+				_AccrualsToDelete.push_back(s_Accruals[i].GetDate());
 			}
 			std::cout << std::endl;
 		}
@@ -95,11 +95,11 @@ namespace LM
 	void MembershipFee::Recalculate(const Privilege& _Privilege)
 	{
 		SortPayments();
-		m_Debt = m_OpeningBalance.m_Money;
+		m_Debt = m_OpeningBalance.GetMoney();
 		for (const auto& Accrual : s_Accruals)
 		{
-			if (!_Privilege.HasPrivilege || Accrual.m_Date < _Privilege.Start)
-				m_Debt += Accrual.m_Money;
+			if (!_Privilege.GetHasPrivilege(Accrual.GetDate()))
+				m_Debt += Accrual.GetMoney();
 		}
 
 		for (const auto& Pay : m_Payments)
@@ -110,24 +110,37 @@ namespace LM
 
 	nlohmann::basic_json<> MembershipFee::GetJson() const
 	{
-		nlohmann::basic_json<> result;
-		result["Debt"]				= m_Debt.GetJson();
-		result["OpeningBalance"]	= m_OpeningBalance.m_Money.GetJson();
+		nlohmann::basic_json<> Result;
+		Result["Debt"]				= m_Debt.GetJson();
+		Result["OpeningBalance"]	= m_OpeningBalance.GetJson();
 
-		result["Payments"] = nlohmann::GetVector(m_Payments);
+		Result["Payments"] = nlohmann::GetVector(m_Payments);
 
-		return result;
+		return Result;
 	}
 
-	void MembershipFee::SetJson(nlohmann::basic_json<> js)
+	void MembershipFee::SetJson(nlohmann::basic_json<> _JS)
 	{
-		if (!js.is_object())
+		if (!_JS.is_object())
 			return;
 
-		m_Debt.SetJson(					 js["Debt"]);
-		m_OpeningBalance.m_Money.SetJson(js["OpeningBalance"]);
+		m_Debt.SetJson(			 _JS["Debt"]);
+		m_OpeningBalance.SetJson(_JS["OpeningBalance"]);
 
-		nlohmann::SetVector(m_Payments, js, "Payments");
+		nlohmann::SetVector(m_Payments, _JS, "Payments");
 	}
 
+	nlohmann::basic_json<> MembershipFee::GetAccrualsJson()
+	{
+		return nlohmann::GetVector(s_Accruals);
+	}
+
+	void MembershipFee::SetAccrualsJson(nlohmann::basic_json<> _JS, std::string_view _Name)
+	{
+		if (!_JS.is_object())
+			return;
+
+		nlohmann::SetVector(s_Accruals, _JS, _Name);
+
+	}
 }

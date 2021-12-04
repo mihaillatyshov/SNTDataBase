@@ -25,13 +25,15 @@ project "SNTDataBase"
 		"%{IncludeDir.glfw}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGui_backends}",
-		"%{IncludeDir.nlohmann}"
+		"%{IncludeDir.nlohmann}",
+		"%{IncludeDir.OpenXLSX}"
 	}
 
 	links
 	{
 		"glfw",
 		"ImGui",
+		"OpenXLSX",
 		"opengl32.lib"
 	}
 

@@ -1,5 +1,7 @@
 #include "TabsCollection.h"
 
+#include "Utils/ImGuiUtils.h"
+
 namespace LM
 {
 
@@ -51,14 +53,14 @@ namespace LM
 
 		DrawPopup
 		(
-			[=]() 
-			{ 
+			[=]()
+			{
 				_DeleteElement();
 				NotifyTable();
-			}, 
-			u8"УДАЛЕНИЕ без возможности восстановления!\n\n\n\n\n", 
-			u8"Удалить"
-		);
+			},
+			u8"УДАЛЕНИЕ без возможности восстановления!\n\n\n\n\n",
+				u8"Удалить"
+				);
 
 		PopId();
 	}
@@ -106,18 +108,7 @@ namespace LM
 
 	void TabsCollection::DrawPopup(std::function<void(void)> _OkCallback, std::string_view _Desc, std::string_view _BtnOk)
 	{
-		// Setup Popup
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImVec2 window_size = ImVec2(400, 150);
-		ImVec2 Distance = ImVec2(viewport->Size.x / 2, viewport->Size.y / 2);
-		ImVec2 window_pos = ImVec2(viewport->Pos.x + Distance.x - window_size.x / 2, viewport->Pos.y + Distance.y - window_size.y / 2);
-		ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-		ImGui::SetNextWindowSize(window_size);
-		//ImGui::SetNextWindowPos();
-		ImGui::SetNextWindowViewport(viewport->ID);
-
-		// Draw Popup
+		ImGuiPrepareCenteredPopup(400.0f, 150.0f);
 		if (ImGui::BeginPopupModal(u8"Удалить?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking))
 		{
 			ImGui::Text(_Desc.data());

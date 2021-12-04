@@ -1,0 +1,327 @@
+{
+    "Homesteads": [
+        {
+            "Electricity": {
+                "Accruals": [
+                    {
+                        "Costs": {
+                            "Day": {
+                                "Amount": 657
+                            },
+                            "Night": {
+                                "Amount": 413
+                            },
+                            "Others": [
+                                {
+                                    "Money": {
+                                        "Amount": 6000
+                                    },
+                                    "Name": "Обслуживающая организация"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 2500
+                                    },
+                                    "Name": "Сервер"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 1500
+                                    },
+                                    "Name": "Освещение и шлагбаум"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 4050
+                                    },
+                                    "Name": "8кВт"
+                                }
+                            ]
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "Day": {
+                            "Watt": 0
+                        },
+                        "Night": {
+                            "Watt": 0
+                        }
+                    },
+                    {
+                        "Costs": {
+                            "Day": {
+                                "Amount": 657
+                            },
+                            "Night": {
+                                "Amount": 413
+                            },
+                            "Others": [
+                                {
+                                    "Money": {
+                                        "Amount": 6000
+                                    },
+                                    "Name": "Обслуживающая организация"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 2500
+                                    },
+                                    "Name": "Сервер"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 1500
+                                    },
+                                    "Name": "Освещение и шлагбаум"
+                                },
+                                {
+                                    "Money": {
+                                        "Amount": 4050
+                                    },
+                                    "Name": "8кВт"
+                                }
+                            ]
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 2,
+                            "Year": 2019
+                        },
+                        "Day": {
+                            "Watt": 100000
+                        },
+                        "Night": {
+                            "Watt": 0
+                        }
+                    }
+                ],
+                "All": {
+                    "Amount": 151721
+                },
+                "OpeningBalance": {
+                    "Amount": 70000
+                },
+                "Payments": null
+            },
+            "ElectricityPrivilege": {
+                "HasPrivilege": false,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2019
+                }
+            },
+            "Forename": "B",
+            "MembershipFee": {
+                "Debt": {
+                    "Amount": 87500
+                },
+                "OpeningBalance": {
+                    "Amount": 50000
+                },
+                "Payments": [
+                    {
+                        "Amount": {
+                            "Amount": 50000
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "",
+                        "FormOfPayment": 0
+                    },
+                    {
+                        "Amount": {
+                            "Amount": 12500
+                        },
+                        "Date": {
+                            "Day": 1,
+                            "Month": 1,
+                            "Year": 2019
+                        },
+                        "DocumentNumber": "",
+                        "FormOfPayment": 0
+                    }
+                ]
+            },
+            "MembershipFeePrivilege": {
+                "HasPrivilege": false,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2019
+                }
+            },
+            "Note": "",
+            "Number": "01",
+            "Patronymic": "J",
+            "PhoneNumber": "",
+            "Surname": "A"
+        },
+        {
+            "Electricity": {
+                "Accruals": null,
+                "All": {
+                    "Amount": 0
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": null
+            },
+            "ElectricityPrivilege": {
+                "HasPrivilege": false,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2019
+                }
+            },
+            "Forename": "И",
+            "MembershipFee": {
+                "Debt": {
+                    "Amount": 100000
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": null
+            },
+            "MembershipFeePrivilege": {
+                "HasPrivilege": true,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2021
+                }
+            },
+            "Note": "",
+            "Number": "2",
+            "Patronymic": "О",
+            "PhoneNumber": "",
+            "Surname": "Ф"
+        },
+        {
+            "Electricity": {
+                "Accruals": null,
+                "All": {
+                    "Amount": 3200
+                },
+                "OpeningBalance": {
+                    "Amount": 3200
+                },
+                "Payments": null
+            },
+            "ElectricityPrivilege": {
+                "HasPrivilege": false,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2019
+                }
+            },
+            "Forename": "",
+            "MembershipFee": {
+                "Debt": {
+                    "Amount": 100000
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": null
+            },
+            "MembershipFeePrivilege": {
+                "HasPrivilege": true,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2022
+                }
+            },
+            "Note": "",
+            "Number": "3",
+            "Patronymic": "",
+            "PhoneNumber": "",
+            "Surname": ""
+        },
+        {
+            "Electricity": {
+                "Accruals": null,
+                "All": {
+                    "Amount": 0
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": null
+            },
+            "ElectricityPrivilege": {
+                "HasPrivilege": false,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2019
+                }
+            },
+            "Forename": "",
+            "MembershipFee": {
+                "Debt": {
+                    "Amount": 100000
+                },
+                "OpeningBalance": {
+                    "Amount": 0
+                },
+                "Payments": null
+            },
+            "MembershipFeePrivilege": {
+                "HasPrivilege": false,
+                "Start": {
+                    "Day": 1,
+                    "Month": 1,
+                    "Year": 2019
+                }
+            },
+            "Note": "",
+            "Number": "129а",
+            "Patronymic": "",
+            "PhoneNumber": "",
+            "Surname": ""
+        }
+    ],
+    "MembershipFee": {
+        "Accruals": [
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 5,
+                    "Year": 2020
+                },
+                "Money": {
+                    "Amount": 50000
+                }
+            },
+            {
+                "Date": {
+                    "Day": 1,
+                    "Month": 6,
+                    "Year": 2020
+                },
+                "Money": {
+                    "Amount": 50000
+                }
+            }
+        ]
+    },
+    "OpeningBalance": {
+        "Date": {
+            "Day": 1,
+            "Month": 4,
+            "Year": 2020
+        }
+    }
+}

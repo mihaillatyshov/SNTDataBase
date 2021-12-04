@@ -23,14 +23,14 @@ namespace LM
 		if (!JS.is_object())
 			return;
 
-		nlohmann::SetVector(m_DataBase->m_Homesteads, JS, "Homesteads");
+		m_DataBase->SetJson(JS["DataBase"]); //nlohmann::SetVector(m_DataBase->m_Homesteads, JS, "Homesteads");
 
 		if (JS["OpeningBalance"].is_object())
-			OpeningBalance::s_Date.SetJson(JS["OpeningBalance"]["Date"]);
+			OpeningBalance::SetDateJson(JS["OpeningBalance"]["Date"]);
 
 		if (JS["MembershipFee"].is_object())
 		{
-			nlohmann::SetVector(MembershipFee::s_Accruals, JS["MembershipFee"], "Accruals");
+			MembershipFee::SetAccrualsJson(JS["MembershipFee"], "Accruals");
 		}
 	}
 
@@ -38,11 +38,11 @@ namespace LM
 	{
 		nlohmann::json JS;
 
-		JS["Homesteads"] = nlohmann::GetVector(m_DataBase->m_Homesteads);
+		JS["DataBase"] = m_DataBase->GetJson(); //nlohmann::GetVector(m_DataBase->m_Homesteads);
 
-		JS["OpeningBalance"]["Date"] = OpeningBalance::s_Date.GetJson();
-
-		JS["MembershipFee"]["Accruals"] = nlohmann::GetVector(MembershipFee::s_Accruals);
+		JS["OpeningBalance"]["Date"] = OpeningBalance::GetDateJson();
+		
+		JS["MembershipFee"]["Accruals"] = MembershipFee::GetAccrualsJson();
 
 		UnloadFile(JS);
 	}

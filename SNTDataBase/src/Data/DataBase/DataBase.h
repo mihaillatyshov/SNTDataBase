@@ -22,24 +22,24 @@ namespace LM
 		void SetMembershipFeeOpeningBalance(size_t _HsId, const Money& _Money);
 
 		void AddElectricityAccrual(size_t _HsId, Ref<const TabDataStruct> _TabDS);
+		void AddElectricityAccrual(size_t _HsId, const ElectricityAccrual& _Accrual);
 		void EditElectricityAccrual(size_t _HsId, size_t _AccId, Ref<const TabDataStruct> _TabDS);
 		void DeleteElectricityAccrual(size_t _HsId, size_t _AccId);
 
 		void AddElectricityPayment(size_t _HsId, Ref<const TabDataStruct> _TabDS);
 		void EditElectricityPayment(size_t _HsId, size_t _PayId, Ref<const TabDataStruct> _TabDS);
 		void DeleteElectricityPayment(size_t _HsId, size_t _PayId);
-
 		void SetElectricityOpeningBalance(size_t _HsId, const Money& _Money);
 
 		const Ref<const Homestead> GetHomestead(size_t _Id) const { return m_Homesteads[_Id]; }
 		size_t GetHomesteadsCount() const { return m_Homesteads.size(); }
 
-
 		void RecalculateMembershipFee();
 		void RecalculateElectricity();
 
-		//std::vector<Homestead>& GetHomesteads() { return m_Homesteads; }
-
+		nlohmann::basic_json<> GetJson() const;
+		void SetJson(nlohmann::basic_json<> _JS);
+	protected:
 		VectorRef<Homestead> m_Homesteads;
 	};
 

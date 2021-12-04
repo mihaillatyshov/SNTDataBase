@@ -14,7 +14,7 @@ namespace LM
 		int         FormOfPayment  = 0;
 		std::string DocumentNumber = "";
 
-		static inline const std::vector<const char*> s_FormOfPaymentString{ u8"Р/С",  u8"Касса" };
+		static inline const std::vector<const char*> s_FormOfPaymentString { u8"Р/С",  u8"Касса" };
 	};
 
 }

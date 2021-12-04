@@ -1,17 +1,19 @@
 #include "Money.h"
 
+#include <iostream>
+#include <sstream>
+
 #include <imgui.h>
 
 #include "Utils/JsonUtils.h"
+#include "Utils/ImGuiUtils.h"
+#include "Utils/StreamUtils.h"
 
 namespace LM
 {
 
 	Money::Money(int64_t _Rub, int64_t _Cop)
 	{
-		if (_Cop >= 100)
-			__debugbreak();
-
 		m_Amount = (_Rub < 0 ? -1 : 1) * (abs(_Rub) * 100 + abs(_Cop));
 	}
 
@@ -27,25 +29,32 @@ namespace LM
 
 	bool Money::DrawEdit(std::string_view _FieldName, float _ItemWidth)
 	{
-		bool isEdit = false;
+		ImGuiDirtyDecorator DirtyDecorator;
+		
+		std::ostringstream BufferStream;
+		BufferStream << m_Amount / 100 << Stream::Fill('0', 2) << abs(m_Amount % 100);
+		std::string BufferStr = BufferStream.str();
+		std::cout << BufferStr << std::endl;
+
 		char label[128];
 		sprintf(label, "%lld.%02lld", m_Amount / 100, abs(m_Amount % 100));
+		
 		ImGui::PushItemWidth(_ItemWidth);
-		if (ImGui::InputText(_FieldName.data(), label, 128, ImGuiInputTextFlags_CharsDecimal))
+		if (ImGui::InputText(_FieldName.data(), BufferStr.data(), BufferStr.size(), ImGuiInputTextFlags_CharsDecimal))
 		{
 			int64_t Rub = 0, Cop = 0, Cop1 = 0, Cop2 = 0;
 			sscanf(label, "%lld.%1lld%1lld", &Rub, &Cop1, &Cop2);
-			Cop = 10 * Cop1 + Cop2;
+			Cop = 10 * abs(Cop1) + abs(Cop2);
 
 			m_Amount = abs(Rub * 100) + abs(Cop);
 			if (Rub < 0)
 				m_Amount = -m_Amount;
 
-			isEdit = true;
+			DirtyDecorator(true);
 		}
 		ImGui::PopItemWidth();
 
-		return isEdit;
+		return DirtyDecorator;
 	}
 
 	nlohmann::basic_json<> Money::GetJson() const
@@ -95,7 +104,23 @@ namespace LM
 		return *this;
 	}
 
-	std::ostream& operator<< (std::ostream& _Out, const Money _Money)
+	const Money Money::operator*(const KiloWatt& _Other) const
+	{
+		Money Res;
+		Res.m_Amount = m_Amount * _Other.Get();
+		Res.m_Amount = Res.m_Amount / 1000 + ((Res.m_Amount % 1'000) / 100 >= 5 ? 1 : 0);
+		return Res;
+	}
+
+	const Money Money::operator*(const Percent& _Other) const
+	{
+		Money Res;
+		Res.m_Amount = m_Amount * _Other.Get();
+		Res.m_Amount = Res.m_Amount / 100 + ((Res.m_Amount % 100) / 10 >= 5 ? 1 : 0);
+		return Res;
+	}
+
+	std::ostream& operator<<(std::ostream& _Out, const Money& _Money)
 	{
 		_Out << _Money.m_Amount / 100 << "." << abs(_Money.m_Amount % 100);
 		return _Out;

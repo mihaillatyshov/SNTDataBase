@@ -1,8 +1,13 @@
 #include "Date.h"
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
 #include <imgui.h>
 
 #include "Utils/JsonUtils.h"
+#include "Utils/StreamUtils.h"
 
 namespace LM
 {
@@ -10,6 +15,17 @@ namespace LM
 		: m_Year(_Year), m_Month(_Month), m_Day(_Day)
 	{
 		FixDate();
+	}
+
+	Date::Date(std::string_view _Str)
+	{
+		std::istringstream In(_Str.data());
+		In >> m_Day;
+		In.ignore(1, '.');
+		In >> m_Month;
+		In.ignore(1, '.');
+		In >> m_Year;
+		std::cout << *this << std::endl;
 	}
 
 	void Date::Draw() const
@@ -20,39 +36,32 @@ namespace LM
 	bool Date::DrawEdit()
 	{
 		Date Start = *this;
+		uint32_t Step = 1;
 
 		ImGui::PushItemWidth(100);
 
 		ImGui::Text(u8"Год"); ImGui::SameLine();
-		if (ImGui::InputInt(u8"##Год", &m_Year))
-		{
-			FixDate();
-		}
-		ImGui::SameLine();
-
+		ImGui::InputScalar(u8"##Год", ImGuiDataType_U32, &m_Year, &Step);
+		
 		ImGui::PopItemWidth();
 		ImGui::PushItemWidth(80);
 
+		ImGui::SameLine();
 		ImGui::Text(u8"Месяц"); ImGui::SameLine();
-		if (ImGui::InputInt(u8"##Месяц", &m_Month))
-		{
-			FixDate();
-		}
+		ImGui::InputScalar(u8"##Месяц", ImGuiDataType_U32, &m_Month, &Step);
 
 		ImGui::SameLine();
 		ImGui::Text(u8"День"); ImGui::SameLine();
-		if (ImGui::InputInt(u8"##День", &m_Day))
-		{
-			FixDate();
-		}
+		ImGui::InputScalar(u8"##День", ImGuiDataType_U32, &m_Day, &Step);
 
 		ImGui::PopItemWidth();
 
-		return Start != *this;
+		FixDate();
 
+		return Start != *this;
 	}
 
-	int Date::GetDaysInMonth(int _Month, int _Year)
+	uint32_t Date::GetDaysInMonth(uint32_t _Month, uint32_t _Year)
 	{
 		const int Days[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 		if ((_Month == 2) && (_Year % 4 == 0))
@@ -62,9 +71,14 @@ namespace LM
 
 	const std::string Date::GetString() const
 	{
-		char date[20]{ 0 };
-		sprintf(date, u8"%02d.%02d.%d", m_Day, m_Month, m_Year);
-		return date;
+		std::ostringstream Res;
+		Res << Stream::Fill('0', 2) << m_Day << "." << Stream::Fill('0', 2) << m_Month << "." << m_Year;
+		return Res.str();
+	}
+
+	const uint32_t Date::GetInt() const
+	{
+		return m_Year * 1000 + m_Month * 100 + m_Day;
 	}
 
 	void Date::IncMonth()
@@ -76,83 +90,42 @@ namespace LM
 		}
 		FixDate();
 	}
-
+	
 	void Date::FixDate()
 	{
-		int MinYear = 0;
-		if (m_Year < MinYear)
-			m_Year = MinYear;
-
-		int MinMonth = 1; 
-		int MaxMonth = 12;
-		if (m_Month < MinMonth)
-			m_Month = MinMonth;
-		else if (m_Month > MaxMonth)
-			m_Month = MaxMonth;
-
-		int MinDay = 1; 
-		int MaxDay = GetDaysInMonth(m_Month, m_Year);
-		if (m_Year % 4 == 0) MaxDay++;
-		if (m_Day < MinDay)
-			m_Day = MinDay;
-		else if (m_Day > MaxDay)
-			m_Day = MaxDay;
+		m_Year	= std::max(		m_Year,		0u);
+		m_Month = std::clamp(	m_Month,	1u, 12u);
+		m_Day	= std::clamp(	m_Day,		1u, GetDaysInMonth(m_Month, m_Year));
 	}
 
 	nlohmann::basic_json<> Date::GetJson() const
 	{
-		nlohmann::basic_json<> result;
-		result["Year"] = m_Year;
-		result["Month"] = m_Month;
-		result["Day"] = m_Day;
+		nlohmann::basic_json<> Result;
+		Result["Year"]	= m_Year;
+		Result["Month"] = m_Month;
+		Result["Day"]	= m_Day;
 
-		return result;
+		return Result;
 	}
 
-	void Date::SetJson(nlohmann::basic_json<> js)
+	void Date::SetJson(nlohmann::basic_json<> _JS)
 	{
-		if (!js.is_object())
+		if (!_JS.is_object())
 			return;
 
-		nlohmann::SetValue(m_Year, js, "Year");
-		nlohmann::SetValue(m_Month, js, "Month");
-		nlohmann::SetValue(m_Day, js, "Day");
+		nlohmann::SetValue(m_Year,	_JS, "Year");
+		nlohmann::SetValue(m_Month, _JS, "Month");
+		nlohmann::SetValue(m_Day,	_JS, "Day");
 	}
 
-	bool Date::operator< (const Date& _Other) const
+	bool Date::operator<(const Date& _Other) const
 	{
-		if (m_Year < _Other.m_Year)
-			return true;
-		else if (m_Year > _Other.m_Year)
-			return false;
-
-		if (m_Month < _Other.m_Month)
-			return true;
-		else if (m_Month > _Other.m_Month)
-			return false;
-
-		if (m_Day < _Other.m_Day)
-			return true;
-
-		return false;
+		return GetInt() < _Other.GetInt();
 	}
 
-	bool Date::operator> (const Date& _Other) const
+	bool Date::operator>(const Date& _Other) const
 	{
-		if (m_Year > _Other.m_Year)
-			return true;
-		else if (m_Year < _Other.m_Year)
-			return false;
-
-		if (m_Month > _Other.m_Month)
-			return true;
-		else if (m_Month < _Other.m_Month)
-			return false;
-
-		if (m_Day > _Other.m_Day)
-			return true;
-
-		return false;
+		return GetInt() > _Other.GetInt();
 	}
 
 	bool Date::operator<=(const Date& _Other) const
@@ -162,20 +135,23 @@ namespace LM
 
 	bool Date::operator>=(const Date& _Other) const
 	{
-		return !(*this > _Other);
+		return !(*this < _Other);
 	}
 
 	bool Date::operator==(const Date& _Other) const
 	{
-		if (m_Year == _Other.m_Year && m_Month == _Other.m_Month && m_Day == _Other.m_Day)
-			return true;
-
-		return false;
+		return GetInt() == _Other.GetInt();
 	}
 
 	bool Date::operator!=(const Date& _Other) const
 	{
 		return !(*this == _Other);
+	}
+
+	std::ostream& operator<<(std::ostream& _Out, const Date& _Date)
+	{
+		_Out << Stream::Fill('0', 2) << _Date.m_Day << "." << Stream::Fill('0', 2) << _Date.m_Month << "." << _Date.m_Year;
+		return _Out;
 	}
 
 }

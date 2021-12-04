@@ -7,30 +7,19 @@
 namespace LM
 {
 
-	void Electricity::Recalculate(bool _HasBenefits)
+	void Electricity::Recalculate(const Privilege& _Privilege)
 	{
 		Sort();
 		m_All = m_OpeningBalance;
-		for (int i = 1; i < m_Accruals.size(); i++)
+		for (size_t i = 1; i < m_Accruals.size(); i++)
 		{
 			//int cost = 6.57 * 1'254.789; // = 8'243.963'73
 			// 657 * 1'254'789 = 824'396'373 //    / 1.000
-			int64_t DayWatt = m_Accruals[i]->m_Data.Day.m_Watt - m_Accruals[i - 1]->m_Data.Day.m_Watt;
-			int64_t NightWatt = m_Accruals[i]->m_Data.Night.m_Watt - m_Accruals[i - 1]->m_Data.Night.m_Watt;
-			Money Day = CalcMonthMoney(DayWatt, m_Accruals[i]->m_Data.Costs.m_Day);
-			Money Night = CalcMonthMoney(NightWatt, m_Accruals[i]->m_Data.Costs.m_Night);
-			Money Losses = CalcLosses(Day, Night);
-			std::cout << Day << std::endl;
-			m_All += Losses;
-			m_All += CalcWithBenefits(Day, Night, _HasBenefits);
-			for (auto& [Name, Amount] : m_Accruals[i]->m_Data.Costs.m_Others)
-			{
-				m_All += Amount;
-			}
+			m_All += CalcAccrual(i, _Privilege);
 		}
 		for (auto& Pay : m_Payments)
 		{
-			m_All -= Pay->m_Data.Amount;
+			m_All -= Pay->GetAmount();
 		}
 	}
 
@@ -38,7 +27,7 @@ namespace LM
 	{
 		std::sort(m_Accruals.begin(), m_Accruals.end(), [](const Ref<const ElectricityAccrual> First, const Ref<const ElectricityAccrual> Second)
 			{
-				return First->m_Data.Date < Second->m_Data.Date;
+				return First->GetDate() < Second->GetDate();
 			});
 	}
 
@@ -46,7 +35,7 @@ namespace LM
 	{
 		std::sort(m_Payments.begin(), m_Payments.end(), [](const Ref<const Payment> First, const Ref<const Payment> Second)
 			{
-				return First->m_Data.Date > Second->m_Data.Date;
+				return First->GetDate() > Second->GetDate();
 			});
 	}
 
@@ -56,97 +45,61 @@ namespace LM
 		SortPayments(); 
 	}
 
-
-	Money Electricity::CalcMonthMoney(int64_t _Watt, const Money& _Cost)
-	{
-		// TODO: Formula here <Trello #20>
-		int64_t MonthCost = _Watt * _Cost.m_Amount;
-		int64_t Rub = MonthCost / 100'000;
-		int64_t Cop = (MonthCost / 1'000) % 100;
-		Cop += (MonthCost % 1'000) / 100 >= 5 ? 1 : 0;
-		return Money(Rub, Cop);
-	}
-
-	Money Electricity::CalcPercent(Money _Money, int _Percent)
-	{
-		_Money.m_Amount *= _Percent;
-		_Money.m_Amount = _Money.m_Amount / 100 + ((_Money.m_Amount % 100) / 10 >= 5 ? 1 : 0);
-		return _Money;
-	}
-
 	Money Electricity::CalcLosses(const Money& _Day, const Money& _Night)
 	{
 		// 101.21       * 3
 		// 303.63       / 100
 		//   3.04
-
-		Money AllMonth = _Day + _Night;
-		std::cout << AllMonth.m_Amount << " ";
-		//AllMonth.m_Amount *= 3;
-		//AllMonth.m_Amount = AllMonth.m_Amount / 100 + ((AllMonth.m_Amount % 100) / 10 >= 5 ? 1 : 0);
-		AllMonth = CalcPercent(AllMonth, 3);
-		std::cout << AllMonth.m_Amount / 100 << "." << AllMonth.m_Amount % 100 << std::endl;
-		return AllMonth;
+		return (_Day + _Night) * Percent(3);
 	}
 
 	Money Electricity::CalcWithBenefits(const Money& _Day, const Money& _Night, bool _HasBenefits)
 	{
-		//Money AllMonth = day + night;
-		Money DayMoney = _Day;
-		Money NightMoney = _Night;
-		if (_HasBenefits)
-		{
-			DayMoney = CalcPercent(DayMoney, 70);
-			NightMoney = CalcPercent(NightMoney, 70);
-		}
-		Money AllMonth = DayMoney + NightMoney;
-		std::cout << AllMonth.m_Amount / 100 << "." << AllMonth.m_Amount % 100 << std::endl;
-		return AllMonth;
-
+		Percent Pct(70);
+		return _HasBenefits ? (_Day * Pct + _Night * Pct) : (_Day + _Night);
 	}
 
-	Money Electricity::CalcAccrualsToDate(const Date& _Date, bool _HasBenefits)
+	Money Electricity::CalcAccrualsToDate(const Date& _Date, const Privilege& _Privilege)
 	{
 		Money Res = m_OpeningBalance;
-		for (int i = 1; i < m_Accruals.size(); i++)
+		for (size_t i = 1; i < m_Accruals.size(); i++)
 		{
-			if (m_Accruals[i]->m_Data.Date > _Date)
+			if (m_Accruals[i]->GetDate() > _Date)
+				break;
+			Res += CalcAccrual(i, _Privilege);
+		}
+		for (const auto& Pay : m_Payments)
+		{
+			if (Pay->GetDate() > _Date)
 				break;
 
-			//int cost = 6.57 * 1'254.789; // = 8'243.963'73
-			// 657 * 1'254'789 = 824'396'373 //    / 1.000
-			int64_t DayKWatt = m_Accruals[i]->m_Data.Day.m_Watt - m_Accruals[i - 1]->m_Data.Day.m_Watt;
-			int64_t NightKWatt = m_Accruals[i]->m_Data.Night.m_Watt - m_Accruals[i - 1]->m_Data.Night.m_Watt;
-			Money Day = CalcMonthMoney(DayKWatt, m_Accruals[i]->m_Data.Costs.m_Day);
-			Money Night = CalcMonthMoney(NightKWatt, m_Accruals[i]->m_Data.Costs.m_Night);
-			Money Losses = CalcLosses(Day, Night);
-			std::cout << Day << std::endl;
-			Res += Losses;
-			Res += CalcWithBenefits(Day, Night, _HasBenefits);
-			for (auto& [Name, Amount] : m_Accruals[i]->m_Data.Costs.m_Others)
-			{
-				Res += Amount;
-				std::cout << "A: " << Amount << std::endl;
-			}
-		}
-		std::cout << "R1: " << Res << std::endl;
-		for (auto& Pay : m_Payments)
-		{
-			if (Pay->m_Data.Date > _Date)
-				break;
-
-			Res -= Pay->m_Data.Amount;
-			std::cout << "P: " << Pay->m_Data.Amount << std::endl;
-
+			Res -= Pay->GetAmount();
 		}
 
-		std::cout << "R2: " << Res << std::endl;
+		return Res;
+	}
+
+	const Money& Electricity::CalcAccrual(size_t _AccId, const Privilege& _Privilege)
+	{
+		Money Res(0);
+
+		Money Day	= m_Accruals[_AccId]->GetCosts().GetDay()	* (m_Accruals[_AccId]->GetDay()		- m_Accruals[_AccId - 1]->GetDay());
+		Money Night = m_Accruals[_AccId]->GetCosts().GetNight() * (m_Accruals[_AccId]->GetNight()	- m_Accruals[_AccId - 1]->GetNight());
+		Res += CalcWithBenefits(Day, Night, _Privilege.GetHasPrivilege(m_Accruals[_AccId]->GetDate()));
+		Res += CalcLosses(Day, Night);
+		Res += m_Accruals[_AccId]->GetCosts().GetOthersSum();
+
 		return Res;
 	}
 
 	void Electricity::AddAccrual(Ref<const TabDataStruct> _TabDS)
 	{
 		m_Accruals.push_back(CreateRef<ElectricityAccrual>(_TabDS));
+	}
+
+	void Electricity::AddAccrual(const ElectricityAccrual& _Accrual)
+	{
+		m_Accruals.push_back(CreateRef<ElectricityAccrual>(_Accrual));
 	}
 
 	void Electricity::EditAccrual(size_t _AccId, Ref<const TabDataStruct> _TabDS)

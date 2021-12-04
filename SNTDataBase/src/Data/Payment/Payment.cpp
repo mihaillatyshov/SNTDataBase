@@ -20,19 +20,6 @@ namespace LM
 		_TabDS = CreateRef<PaymentTabDS>(m_Data);
 	}
 
-	void Payment::DrawDocumentNumberEdit()
-	{
-		int BufSize = 20;
-		//std::string InputId = "##DocumentNumber"; //+ std::to_string(id);
-		char* NameBuf = new char[BufSize] { 0 };
-		memcpy(NameBuf, m_Data.DocumentNumber.c_str(), m_Data.DocumentNumber.size());
-		ImGui::PushItemWidth(250);
-		if (ImGui::InputText(u8"Номер платежа", NameBuf, BufSize))
-			m_Data.DocumentNumber = NameBuf;
-		delete[] NameBuf;
-		ImGui::PopItemWidth();
-	}
-
 	std::vector<std::function<void(void)>> Payment::GetDrawableColumns() const
 	{
 		return

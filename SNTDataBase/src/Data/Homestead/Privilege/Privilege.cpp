@@ -1,26 +1,46 @@
 #include "Privilege.h"
 
 #include "Utils/JsonUtils.h"
+#include "Utils/ImGuiUtils.h"
 
 namespace LM
 {
 
-	nlohmann::basic_json<> Privilege::GetJson() const
+	bool Privilege::DrawEdit(std::string_view _Name)
 	{
-		nlohmann::basic_json<> result;
-		result["HasPrivilege"] = HasPrivilege;
-		result["Start"] = Start.GetJson();
-
-		return result;
+		ImGuiDirtyDecorator DirtyDecorator;
+		DirtyDecorator(ImGui::Checkbox(_Name.data(), &m_HasPrivilege));
+		if (m_HasPrivilege)
+		{
+			ImGui::SameLine();
+			ImGui::TextUnformatted(u8"        Начало льготы:   ");
+			ImGui::SameLine();
+			DirtyDecorator(m_Start.DrawEdit());
+		}
+		return DirtyDecorator;
 	}
 
-	void Privilege::SetJson(nlohmann::basic_json<> js)
+	bool Privilege::GetHasPrivilege(const Date& _Date) const
 	{
-		if (!js.is_object())
+		return m_HasPrivilege && (_Date >= m_Start);
+	}
+
+	nlohmann::basic_json<> Privilege::GetJson() const
+	{
+		nlohmann::basic_json<> Result;
+		Result["HasPrivilege"] = m_HasPrivilege;
+		Result["Start"] = m_Start.GetJson();
+
+		return Result;
+	}
+
+	void Privilege::SetJson(nlohmann::basic_json<> _JS)
+	{
+		if (!_JS.is_object())
 			return;
 
-		nlohmann::SetValue(HasPrivilege, js, "HasPrivilege");
-		Start.SetJson(js["Start"]);
+		nlohmann::SetValue(m_HasPrivilege, _JS, "HasPrivilege");
+		m_Start.SetJson(_JS["Start"]);
 	}
 
 }

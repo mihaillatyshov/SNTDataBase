@@ -32,6 +32,7 @@ namespace LM
 		inline const Date& GetDate() const { return m_Data.Date; }
 		inline const Money& GetAmount() const { return m_Data.Amount; }
 		inline std::string_view GetFormOfPayment() const { return PaymentData::s_FormOfPaymentString[m_Data.FormOfPayment]; }
+		inline std::string_view GetDocumentNumber() const { return m_Data.DocumentNumber; }
 
 		virtual std::vector<std::function<void(void)>> GetDrawableColumns() const override;
 
@@ -40,10 +41,6 @@ namespace LM
 
 		void FillDataStruct(Ref<TabDataStruct>& _TabDS) const override;
 	protected:
-		void DrawDocumentNumberEdit();
-
-		void DrawDocumentNumber() { ImGui::Text(u8"Номер документа: %s", m_Data.DocumentNumber.c_str()); }
-	public:
 		PaymentData m_Data;
 	};
 

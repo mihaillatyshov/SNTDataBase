@@ -10,6 +10,7 @@ namespace LM
 	Homestead::Homestead()
 	{
 		RecalculateMembershipFee();
+		RecalculateElectricity();
 	}
 
 	Homestead::Homestead(Ref<const TabDataStruct> _TabDS)
@@ -58,6 +59,12 @@ namespace LM
 	void Homestead::AddElectricityAccrual(Ref<const TabDataStruct> _TabDS)
 	{
 		m_Electricity.AddAccrual(_TabDS);
+		RecalculateElectricity();
+	}
+
+	void Homestead::AddElectricityAccrual(const ElectricityAccrual& _Accrual)
+	{
+		m_Electricity.AddAccrual(_Accrual);
 		RecalculateElectricity();
 	}
 
@@ -132,7 +139,7 @@ namespace LM
 
 	void Homestead::RecalculateElectricity()
 	{
-		m_Electricity.Recalculate(m_Data.ElectricityPrivilege.HasPrivilege);
+		m_Electricity.Recalculate(m_Data.ElectricityPrivilege);
 	}
 
 	nlohmann::basic_json<> Homestead::GetJson() const

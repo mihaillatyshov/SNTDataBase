@@ -6,22 +6,15 @@
 namespace LM
 {
 	SimpleTable::SimpleTable(const std::vector<std::string>& _Names, const GEDF_V& _GetElementDrawFunc, const GEC_F& _GetElementsCount)
-		: m_Names(_Names), m_GetElementDraw(_GetElementDrawFunc), m_GetElementsCount(_GetElementsCount)
+		: ITable(_Names), m_GetElementDraw(_GetElementDrawFunc), m_GetElementsCount(_GetElementsCount)
 	{
 
 	}
 
 	void SimpleTable::Draw()
 	{
-		ImGuiTableFlags Flags =
-			ImGuiTableFlags_Resizable
-			| ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
-			| ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
-			| ImGuiTableFlags_ScrollY
-			| ImGuiTableFlags_SizingFixedFit;
-
 		ImVec2 RegionAvail = ImGui::GetContentRegionAvail();
-		if (ImGui::BeginTable("table_advanced", (int)m_Names.size(), Flags, ImVec2(0.0f, RegionAvail.y - 50)))
+		if (ImGui::BeginTable("table_advanced", (int)m_Names.size(), s_Flags, ImVec2(0.0f, RegionAvail.y - 50)))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1);
 			for (size_t i = 0; i < m_Names.size(); i++)
@@ -30,11 +23,10 @@ namespace LM
 			}
 			ImGui::TableHeadersRow();
 
-			ImGuiListClipper clipper;
-			clipper.Begin((int)m_GetElementsCount());
-			while (clipper.Step())
+			m_Clipper.Begin((int)m_GetElementsCount());
+			while (m_Clipper.Step())
 			{
-				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+				for (int i = m_Clipper.DisplayStart; i < m_Clipper.DisplayEnd; i++)
 				{
 					ImGui::PushID(i);
 					ImGui::TableNextRow();
