@@ -150,7 +150,7 @@ namespace LM
 
 	std::ostream& operator<<(std::ostream& _Out, const Date& _Date)
 	{
-		_Out << Stream::Fill('0', 2) << _Date.m_Day << "." << Stream::Fill('0', 2) << _Date.m_Month << "." << _Date.m_Year;
+		_Out << _Date.GetString();
 		return _Out;
 	}
 

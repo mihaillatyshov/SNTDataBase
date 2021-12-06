@@ -25,6 +25,7 @@ namespace LM
 		void DrawAbs() const;
 		bool DrawEdit(std::string_view _FieldName = "", float _ItemWidth = 250.0f);
 
+		std::string GetString() const;
 		inline int64_t Get()		const { return m_Amount; }
 		inline int64_t GetRubs()	const { return abs(m_Amount / 100); }
 		inline int64_t GetCops()	const { return abs(m_Amount % 100); }
@@ -32,8 +33,9 @@ namespace LM
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);
 	public:
-		//static CalcPercent(const Money& _Money, );
 		bool operator<(int _Val) const;
+		bool operator==(const Money& _Other) const;
+		bool operator!=(const Money& _Other) const;
 		const Money operator+(const Money& _Other) const;
 		const Money operator-(const Money& _Other) const;
 		Money& operator+=(const Money& _Other);

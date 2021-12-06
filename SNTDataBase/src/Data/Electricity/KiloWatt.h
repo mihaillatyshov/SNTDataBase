@@ -14,6 +14,7 @@ namespace LM
 		void Draw() const;
 		bool DrawEdit(std::string_view _FieldName);
 
+		std::string GetString() const;
 		int64_t Get() const { return m_Watt; }
 
 		nlohmann::basic_json<> GetJson() const;

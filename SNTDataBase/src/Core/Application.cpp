@@ -17,6 +17,7 @@
 #include "LoaderUnloader/CsvReader.h"
 #include "Utils/Time.h"
 #include "Utils/ImGuiUtils.h"
+#include "Utils/StreamUtils.h"
 
 namespace fs = std::filesystem;
 
@@ -105,15 +106,6 @@ namespace LM
 		m_ElectricityPaymentTabsCollection		= CreateRef<TabsCollection>(u8"платежа",	m_ElectricityPaymentsTable);
 
 		m_TabCsvSelector = CreateRef<TabCsvSelector>(m_DataBase);
-
-		Date D1("01.06.2000");
-		Date D2("1.10.2001");
-
-
-		std::istringstream Ostr("da12345");
-		int I1;
-		Ostr >> I1;
-		std::cout << "I1: " << I1 << std::endl;
 	}
 
 	Application::~Application()
@@ -124,15 +116,16 @@ namespace LM
 
 	void Application::CreateBackup(std::string_view _Param)
 	{
+		using namespace Stream;
 		auto LocalTime = Time::GetLocalTime();
 
 		std::ostringstream Filename;
-		Filename									<< LocalTime->tm_year + 1900	<< "-"
-			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_mon  + 1		<< "-"
-			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_mday			<< "-"
-			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_hour			<< "-"
-			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_min			<< "-"
-			<< std::setfill('0') << std::setw(2)	<< LocalTime->tm_sec			<< (_Param.size() ? "-" : "")
+		Filename			<< LocalTime->tm_year + 1900	<< "-"
+			<< Fill('0', 2)	<< LocalTime->tm_mon  + 1		<< "-"
+			<< Fill('0', 2)	<< LocalTime->tm_mday			<< "-"
+			<< Fill('0', 2)	<< LocalTime->tm_hour			<< "-"
+			<< Fill('0', 2)	<< LocalTime->tm_min			<< "-"
+			<< Fill('0', 2)	<< LocalTime->tm_sec			<< (_Param.size() ? "-" : "")
 			<< _Param << ".json";
 		std::cout << Filename.str() << std::endl;
 
@@ -681,12 +674,23 @@ namespace LM
 	{
 		std::ofstream Fout("Electricity.csv");
 		if (!Fout.is_open())
+		{
+			std::cout << "Can't create file to save electricity!" << std::endl;
 			return;
+		}
 
 		const std::string SepCSV = ";";
 
-		Fout << u8"Номер участка" << SepCSV << u8"КВт за все время Общее" << SepCSV << u8"КВт за все время День" << SepCSV << u8"КВт за все время Ночь" << SepCSV;
-		Fout << u8"КВт за последий месяц Общее" << SepCSV << u8"КВт за последий месяц День" << SepCSV << u8"КВт за последий месяц Ночь" << SepCSV;
+		std::vector<std::string> Names = { "Номер участка",
+			"КВт за все время Общее", "КВт за все время День", "КВт за все время Ночь",
+			"КВт за последий месяц Общее", "КВт за последий месяц День", "КВт за последий месяц Ночь",
+			"Сумма Общее", "Сумма День", "Сумма Ночь", "Потери"
+		};
+		for (const auto& Name : Names)
+		{
+			Fout << Name << SepCSV;
+		}
+		Fout << std::endl;
 
 		for (size_t i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
 		{
@@ -696,24 +700,65 @@ namespace LM
 			if (El.GetAccrualsCount() < 2)
 				continue;
 
-			Fout << Hs->GetNumber()			<< SepCSV;			// Write homestead number
+			Fout << Hs->GetNumber()			<< SepCSV;			// Write "Номер участка"
 
 			const auto& AccLast = El.GetAccrual(El.GetAccrualsCount() - 1);
 			const auto& AccPreLast = El.GetAccrual(El.GetAccrualsCount() - 2);
 
-			Fout << AccLast->GetAllMonth()	<< SepCSV;			// Write accrual KW (All full monthes)
-			Fout << AccLast->GetDay()		<< SepCSV;			// Write accrual KW (All days)
-			Fout << AccLast->GetNight()		<< SepCSV;			// Write accrual KW (All nights)
+			Fout << AccLast->GetAllMonth()	<< SepCSV;			// Write "КВт за все время Общее"
+			Fout << AccLast->GetDay()		<< SepCSV;			// Write "КВт за все время День"
+			Fout << AccLast->GetNight()		<< SepCSV;			// Write "КВт за все время Ночь"
 
 			// Last accruals difference
 			KiloWatt DayKW		= AccLast->GetDay()		- AccPreLast->GetDay();
 			KiloWatt NightKW	= AccLast->GetNight()	- AccPreLast->GetNight();
 			
-			Fout << DayKW + NightKW << SepCSV;					// Write accrual KW (Last full monthes)
-			Fout << DayKW			<< SepCSV;					// Write accrual KW (Last days)
-			Fout << NightKW			<< SepCSV;					// Write accrual KW (Last nights)
+			Fout << DayKW + NightKW << SepCSV;					// Write "КВт за последий месяц Общее"
+			Fout << DayKW			<< SepCSV;					// Write "КВт за последий месяц День"
+			Fout << NightKW			<< SepCSV;					// Write "КВт за последий месяц Ночь"
 
+			// Начислено РУБ
+			Money DayMoney, NightMoney, LossesMoney;
+			El.GetAccrualCsv(El.GetAccrualsCount() - 1, Hs->GetElectricityPrivilege(), &DayMoney, &NightMoney, &LossesMoney);
+			
+			Fout << DayMoney + NightMoney	<< SepCSV;			// Write "Сумма Общее"
+			Fout << DayMoney				<< SepCSV;
+			Fout << NightMoney				<< SepCSV;
+			Fout << LossesMoney				<< SepCSV;
+			for (const auto& Other : AccLast->GetCosts().GetOthres())
+			{
+				Fout << Other.GetMoney() << SepCSV;
+			}
 
+			Money SumToDate = El.CalcAccrualsToDate(AccPreLast->GetDate(), Hs->GetElectricityPrivilege());
+			Money FullSum = DayMoney + NightMoney + LossesMoney + SumToDate + AccLast->GetCosts().GetOthersSum();
+			
+			Fout << SumToDate	<< SepCSV;
+			Fout << FullSum		<< SepCSV;
+			
+			Money LastPaysSum(0);
+			Date  LastPaysDate;
+			for (int j = 0; j < El.GetPaymentsCount(); j++)
+			{
+				if (El.GetPayment(j)->GetDate() > AccPreLast->GetDate() && El.GetPayment(j)->GetDate() <= AccLast->GetDate())
+				{
+					LastPaysSum += El.GetPayment(j)->GetAmount();
+					LastPaysDate = El.GetPayment(j)->GetDate();
+				}
+			}
+
+			if (LastPaysSum != Money(0))
+			{
+				Fout << LastPaysDate	<< SepCSV;
+				Fout << LastPaysSum		<< SepCSV;
+			}
+			else
+			{
+				Fout << SepCSV << SepCSV;
+			}
+
+			Fout << FullSum - LastPaysSum << SepCSV;
+			Fout << std::endl;
 		}
 
 

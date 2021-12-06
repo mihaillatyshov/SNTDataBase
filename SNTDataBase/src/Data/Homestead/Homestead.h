@@ -31,16 +31,16 @@ namespace LM
 		inline void SetPhoneNumber(std::string_view phoneNumber)	{ m_Data.PhoneNumber = phoneNumber; }
 		inline void SetNote(std::string_view note)					{ m_Data.Note = note; }
 
-		inline std::string_view     GetNumber()						const { return m_Data.Number; }
-		inline std::string_view     GetSurname()					const { return m_Data.Surname; }
-		inline std::string_view     GetForename()					const { return m_Data.Forename; }
-		inline std::string_view     GetPatronymic()					const { return m_Data.Patronymic; }
-		inline std::string_view     GetPhoneNumber()				const { return m_Data.PhoneNumber; }
-		inline std::string_view     GetNote()						const { return m_Data.Note; }
-		inline bool                 HasElectricityPrivilege()		const { return m_Data.ElectricityPrivilege.GetHasPrivilege(); }
-		inline bool                 HasMembershipFeesPrivilege()	const { return m_Data.MembershipFeePrivilege.GetHasPrivilege(); }
-		inline const MembershipFee& GetMembershipFee()				const { return m_MembershipFee; }
-		inline const Electricity&	GetElectricity()				const { return m_Electricity; }
+		inline std::string_view		GetNumber()					const { return m_Data.Number; }
+		inline std::string_view		GetSurname()				const { return m_Data.Surname; }
+		inline std::string_view		GetForename()				const { return m_Data.Forename; }
+		inline std::string_view		GetPatronymic()				const { return m_Data.Patronymic; }
+		inline std::string_view		GetPhoneNumber()			const { return m_Data.PhoneNumber; }
+		inline std::string_view		GetNote()					const { return m_Data.Note; }
+		inline const Privilege&		GetElectricityPrivilege()	const { return m_Data.ElectricityPrivilege; }
+		inline const Privilege&		GetMembershipFeePrivilege()	const { return m_Data.MembershipFeePrivilege; }
+		inline const MembershipFee&	GetMembershipFee()			const { return m_MembershipFee; }
+		inline const Electricity&	GetElectricity()			const { return m_Electricity; }
 
 
 		void AddMembershipFeePayment(Ref<const TabDataStruct> _TabDS);

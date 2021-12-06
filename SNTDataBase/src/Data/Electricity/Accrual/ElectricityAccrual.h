@@ -22,10 +22,10 @@ namespace LM
 
 		void Edit(Ref<const TabDataStruct> _TabDS);
 
-		inline const Date& GetDate()						const { return m_Data.Date; }
-		inline const KiloWatt& GetDay()						const { return m_Data.Day; }
-		inline const KiloWatt& GetNight()					const { return m_Data.Night; }
-		inline const ElectricityAccrualCosts& GetCosts()	const { return m_Data.Costs; }
+		inline const Date& GetDate()							const { return m_Data.Date; }
+		inline const KiloWatt& GetDay()							const { return m_Data.Day; }
+		inline const KiloWatt& GetNight()						const { return m_Data.Night; }
+		inline const ElectricityAccrualCosts& GetCosts()		const { return m_Data.Costs; }
 
 		inline KiloWatt GetAllMonth() const { return m_Data.Day + m_Data.Night; }
 

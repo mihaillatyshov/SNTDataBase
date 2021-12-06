@@ -17,8 +17,9 @@ namespace LM
 
 		bool DrawEdit();
 		
-		inline const Money& GetDay()	const { return m_Day; }
-		inline const Money& GetNight()	const { return m_Night; }
+		inline const Money&										GetDay()	const { return m_Day; }
+		inline const Money&										GetNight()	const { return m_Night; }
+		inline const std::vector<OtherElectricityAccrualCost>&	GetOthres() const { return m_Others; }
 		
 		const Money& GetOthersSum() const;
 

@@ -1,5 +1,8 @@
 #include "ImGuiUtils.h"
 
+#include <iostream>
+#include <sstream>
+
 namespace LM
 {
 
@@ -33,4 +36,27 @@ namespace LM
 
 		return isStringEdited;
 	}
+
+	int64_t GetIntFromSplitStr(std::string_view _Str, uint32_t _Precision)
+	{
+		std::istringstream IStream(_Str.data());
+		
+		int64_t First = 0;
+		IStream >> First;
+		
+		IStream.ignore(1, '.');
+
+		std::string SecondStr;
+		IStream >> SecondStr;
+		while (SecondStr.length() < _Precision)
+			SecondStr.append("0");
+		SecondStr = SecondStr.substr(0, _Precision);
+		int64_t Second = std::stoi(SecondStr);
+		
+		int K = 1;
+		for (int i = 0; i < _Precision; i++)
+			K *= 10;
+		return (First < 0 ? -1 : 1) * (abs(First) * K + abs(Second));
+	}
+
 }

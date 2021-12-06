@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 #include "Utils/JsonUtils.h"
 #include "Utils/ImGuiUtils.h"
@@ -31,30 +32,24 @@ namespace LM
 	{
 		ImGuiDirtyDecorator DirtyDecorator;
 		
-		std::ostringstream BufferStream;
-		BufferStream << m_Amount / 100 << Stream::Fill('0', 2) << abs(m_Amount % 100);
-		std::string BufferStr = BufferStream.str();
-		std::cout << BufferStr << std::endl;
-
-		char label[128];
-		sprintf(label, "%lld.%02lld", m_Amount / 100, abs(m_Amount % 100));
+		std::string Buffer = GetString();
 		
 		ImGui::PushItemWidth(_ItemWidth);
-		if (ImGui::InputText(_FieldName.data(), BufferStr.data(), BufferStr.size(), ImGuiInputTextFlags_CharsDecimal))
+		if (ImGui::InputText(_FieldName.data(), &Buffer, ImGuiInputTextFlags_CharsDecimal))
 		{
-			int64_t Rub = 0, Cop = 0, Cop1 = 0, Cop2 = 0;
-			sscanf(label, "%lld.%1lld%1lld", &Rub, &Cop1, &Cop2);
-			Cop = 10 * abs(Cop1) + abs(Cop2);
-
-			m_Amount = abs(Rub * 100) + abs(Cop);
-			if (Rub < 0)
-				m_Amount = -m_Amount;
-
+			m_Amount = GetIntFromSplitStr(Buffer, 2u);
 			DirtyDecorator(true);
 		}
 		ImGui::PopItemWidth();
 
 		return DirtyDecorator;
+	}
+
+	std::string Money::GetString() const
+	{
+		std::ostringstream Res;
+		Res << m_Amount / 100 << '.' << Stream::Fill('0', 2) << abs(m_Amount % 100);
+		return Res.str();
 	}
 
 	nlohmann::basic_json<> Money::GetJson() const
@@ -76,6 +71,16 @@ namespace LM
 	bool Money::operator<(int _Val) const
 	{
 		return m_Amount < _Val;
+	}
+
+	bool Money::operator==(const Money& _Other) const
+	{
+		return m_Amount == _Other.m_Amount;
+	}
+
+	bool Money::operator!=(const Money& _Other) const
+	{
+		return !(*this == _Other);
 	}
 
 	const Money Money::operator+(const Money& _Other) const
@@ -122,7 +127,7 @@ namespace LM
 
 	std::ostream& operator<<(std::ostream& _Out, const Money& _Money)
 	{
-		_Out << _Money.m_Amount / 100 << "." << abs(_Money.m_Amount % 100);
+		_Out << _Money.GetString();
 		return _Out;
 	}
 

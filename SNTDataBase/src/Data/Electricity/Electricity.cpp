@@ -50,16 +50,15 @@ namespace LM
 		// 101.21       * 3
 		// 303.63       / 100
 		//   3.04
-		return (_Day + _Night) * Percent(3);
+		return (_Day + _Night) * LossesPecent;
 	}
 
 	Money Electricity::CalcWithBenefits(const Money& _Day, const Money& _Night, bool _HasBenefits)
 	{
-		Percent Pct(70);
-		return _HasBenefits ? (_Day * Pct + _Night * Pct) : (_Day + _Night);
+		return _HasBenefits ? (_Day * BenefitPecent + _Night * BenefitPecent) : (_Day + _Night);
 	}
 
-	Money Electricity::CalcAccrualsToDate(const Date& _Date, const Privilege& _Privilege)
+	Money Electricity::CalcAccrualsToDate(const Date& _Date, const Privilege& _Privilege) const
 	{
 		Money Res = m_OpeningBalance;
 		for (size_t i = 1; i < m_Accruals.size(); i++)
@@ -79,7 +78,7 @@ namespace LM
 		return Res;
 	}
 
-	const Money& Electricity::CalcAccrual(size_t _AccId, const Privilege& _Privilege)
+	const Money& Electricity::CalcAccrual(size_t _AccId, const Privilege& _Privilege) const
 	{
 		Money Res(0);
 
@@ -90,6 +89,18 @@ namespace LM
 		Res += m_Accruals[_AccId]->GetCosts().GetOthersSum();
 
 		return Res;
+	}
+
+	void Electricity::GetAccrualCsv(size_t _AccId, const Privilege& _Privilege, Money* _Day, Money* _Night, Money* _Losses) const
+	{
+		*_Day = m_Accruals[_AccId]->GetCosts().GetDay() * (m_Accruals[_AccId]->GetDay() - m_Accruals[_AccId - 1]->GetDay());
+		*_Night = m_Accruals[_AccId]->GetCosts().GetNight() * (m_Accruals[_AccId]->GetNight() - m_Accruals[_AccId - 1]->GetNight());
+		*_Losses = CalcLosses(*_Day, *_Night);
+		if (_Privilege.GetHasPrivilege(m_Accruals[_AccId]->GetDate()))
+		{
+			*_Day = *_Day * BenefitPecent;
+			*_Night = *_Night * BenefitPecent;
+		}
 	}
 
 	void Electricity::AddAccrual(Ref<const TabDataStruct> _TabDS)

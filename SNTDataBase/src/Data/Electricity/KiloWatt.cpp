@@ -1,11 +1,14 @@
 #include "KiloWatt.h"
 
 #include <iostream>
+#include <sstream>
 
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 #include "Utils/JsonUtils.h"
 #include "Utils/ImGuiUtils.h"
+#include "Utils/StreamUtils.h"
 
 namespace LM
 {
@@ -17,20 +20,14 @@ namespace LM
 
 	KiloWatt::KiloWatt(std::string _Str)
 	{
-		int64_t KiloWatts;
-		int64_t Watts;
-
 		for (auto It = _Str.find(' '); It != std::string::npos; It = _Str.find(' '))
-		{
 			_Str.erase(It, 1);
-		}
 
 		auto It = _Str.find(',');
 		if (It != std::string::npos)
 			_Str[It] = '.';
 
-		sscanf(_Str.data(), "%lld.%03lld", &KiloWatts, &Watts);
-		m_Watt = KiloWatts * 1000 + Watts;
+		m_Watt = GetIntFromSplitStr(_Str, 3);
 	}
 
 	void KiloWatt::Draw() const
@@ -41,23 +38,25 @@ namespace LM
 	bool KiloWatt::DrawEdit(std::string_view _FieldName)
 	{
 		ImGuiDirtyDecorator DirtyDecorator;
-		char label[100];
-		sprintf(label, "%lld.%03lld", m_Watt / 1000, abs(m_Watt % 1000));
-		ImGui::PushItemWidth(250);
-		if (ImGui::InputText(_FieldName.data(), label, 100, ImGuiInputTextFlags_CharsDecimal))
-		{
-			int64_t Kwatt = 0, Watt = 0, Watt1 = 0, Watt2 = 0, Watt3 = 0;
-			sscanf(label, "%lld.%1lld%1lld%1lld", &Kwatt, &Watt1, &Watt2, &Watt3);
-			Watt = 100 * abs(Watt1) + 10 * abs(Watt2) + abs(Watt3);
 
-			m_Watt = abs(Kwatt * 1000) + abs(Watt);
-			if (Kwatt < 0)
-				m_Watt = -m_Watt;
+		std::string Buffer = GetString();
+
+		ImGui::PushItemWidth(250);
+		if (ImGui::InputText(_FieldName.data(), &Buffer, ImGuiInputTextFlags_CharsDecimal))
+		{
+			m_Watt = GetIntFromSplitStr(Buffer, 3u);
 			DirtyDecorator(true);
 		}
 		ImGui::PopItemWidth();
 
 		return DirtyDecorator;
+	}
+
+	std::string KiloWatt::GetString() const
+	{
+		std::ostringstream Res;
+		Res << m_Watt / 1000 << '.' << Stream::Fill('0', 3) << abs(m_Watt % 1000);
+		return Res.str();
 	}
 
 	nlohmann::basic_json<> KiloWatt::GetJson() const
@@ -89,22 +88,8 @@ namespace LM
 
 	std::ostream& operator<<(std::ostream& _Out, const KiloWatt& _KiloWatt)
 	{
-		_Out << _KiloWatt.m_Watt / 1000 << "." << _KiloWatt.m_Watt % 1000;
+		_Out << _KiloWatt.GetString();
 		return _Out;
 	}
-
-	//const KiloWatt operator+(const KiloWatt& left, const KiloWatt& right)
-	//{
-	//    KiloWatt res;
-	//    res.m_Watt = left.m_Watt + right.m_Watt;
-	//    return res;
-	//}
-	//
-	//const KiloWatt operator-(const KiloWatt& left, const KiloWatt& right)
-	//{
-	//    KiloWatt res;
-	//    res.m_Watt = left.m_Watt - right.m_Watt;
-	//    return res;
-	//}
 
 }
