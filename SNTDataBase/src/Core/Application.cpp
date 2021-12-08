@@ -166,8 +166,8 @@ namespace LM
 	{
 	}
 
-	void Application::OnDropEvent(const std::string& _FileName)
-	{
+	void Application::OnDropEvent(std::string_view _FileName)
+	{ 
 		m_TabCsvSelector->Open(_FileName);
 
 		std::cout << _FileName << std::endl;

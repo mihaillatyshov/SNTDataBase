@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <filesystem>
 #include <algorithm>
 
 namespace LM
@@ -17,6 +18,17 @@ namespace LM
 	void CsvReader::RemoveColumn(int _Id)
 	{
 		std::for_each(m_Cells.begin(), m_Cells.end(), [_Id](std::vector<std::string>& _Row) { _Row.erase(_Row.begin() + _Id); });
+		m_ColumnsCount--;
+	}
+
+	void CsvReader::FillEmptyColumns(size_t size)
+	{
+		size = std::max(std::max_element(m_Cells.begin(), m_Cells.end(), 
+			[](const std::vector<std::string>& V1, const std::vector<std::string>& V2)
+			{ 
+				return V1.size() > V2.size(); 
+			}
+		)->size(), size);
 	}
 
 	void CsvReader::DebugPrint() const
@@ -34,7 +46,7 @@ namespace LM
 	
 	void CsvReader::Load()
 	{
-		std::ifstream Fin(m_FileName.data());
+		std::ifstream Fin(std::filesystem::path(m_FileName, std::locale("en_US.UTF-8")));
 		m_IsFileOk = Fin.is_open();
 		if (!m_IsFileOk)
 			return;
@@ -66,8 +78,11 @@ namespace LM
 				Start = Pos + 1;
 				Pos = Line.find(';', Start);
 			}
-			//std::cout << std::endl;
+			m_Cells.back().push_back(Line.substr(Start));
 		}
+		m_RowsCount = m_Cells.size();
+		if (m_RowsCount > 0) 
+			m_ColumnsCount = m_Cells[0].size();
 	}
 
 }

@@ -38,6 +38,8 @@ namespace LM
 
 		void Draw() override;
 	protected:
+		void DrawFailed();
+		void DrawOk();
 		void DrawChangeCosts();
 		void DrawAdd();
 		void Add();

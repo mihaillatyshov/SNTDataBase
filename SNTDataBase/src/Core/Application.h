@@ -29,7 +29,7 @@ namespace LM
 		static inline Application* s_Application;
 
 		void OnResizeEvent();
-		void OnDropEvent(const std::string& _FileName);
+		void OnDropEvent(std::string_view _FileName);
 	protected:
 		void DrawMenuBar();
 		void DrawFileMenu();
