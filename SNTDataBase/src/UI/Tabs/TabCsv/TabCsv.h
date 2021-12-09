@@ -2,6 +2,7 @@
 
 #include "LoaderUnloader/CsvReader.h"
 #include "Data/DataBase/DataBase.h"
+#include "UI/Table/CsvTable.h"
 
 namespace LM
 {
@@ -9,14 +10,14 @@ namespace LM
 	class TabCsv
 	{
 	public:
-		TabCsv(std::string_view _FileName, Ref<DataBase> _DataBase);
+		TabCsv(std::string_view _FileName, const std::vector<std::string>& _Names, Ref<DataBase> _DataBase);
 		virtual void Draw() = 0;
 		void Close() { m_IsOpen = false; }
 	protected:
 		bool m_IsOpen = true;
-		Ref<DataBase> m_DataBase;
-		CsvReader m_Reader;
-		std::vector<size_t> m_ColumnsIds;
+		Ref<DataBase>	m_DataBase;
+		Ref<CsvReader>	m_Reader;
+		Ref<CsvTable>	m_Table;
 	};
 
 }

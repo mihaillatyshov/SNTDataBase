@@ -28,8 +28,8 @@ namespace LM
 		std::vector<std::string> m_Names;
 		int m_SelectedId = -1;
 
-		GE_F m_GetElement;
-		GEC_F m_GetElementsCount;
+		GE_F	m_GetElement;
+		GEC_F	m_GetElementsCount;
 	};
 
 }

@@ -45,7 +45,6 @@ namespace LM
 		void Add();
 		ElectricityAccrual CreateAccrual(size_t _CsvId);
 		size_t GetIdByNumber(std::string_view _Number);
-		size_t GetColId(ColumnName _ColName);
 		void DrawChildName(std::string_view _Name);
 	protected:
 		std::vector<std::string> m_Names;

@@ -14,9 +14,8 @@ namespace LM
 {
 
 	TabCsvElectricity::TabCsvElectricity(std::string_view _FileName, Ref<DataBase> _DataBase)
-		: TabCsv(_FileName, _DataBase), m_Names({ u8"Дата", u8"Номер участка", u8"День", u8"Ночь", u8"Общее" })
+		: TabCsv(_FileName, { u8"Дата", u8"Номер участка", u8"День", u8"Ночь", u8"Общее" }, _DataBase)
 	{
-		m_Reader.FillEmptyColumns();
 	}
 
 	TabCsvElectricity::~TabCsvElectricity()
@@ -28,7 +27,7 @@ namespace LM
 	{
 		if (ImGui::BeginTabItem(u8"Загрузка файла Электроэнергии", &m_IsOpen, ImGuiTabItemFlags_SetSelected))
 		{
-			if (m_Reader.IsFileOk())
+			if (m_Reader->IsFileOk())
 				DrawOk();
 			else
 				DrawFailed();
@@ -47,88 +46,12 @@ namespace LM
 			Close();
 		}
 
-		ImGuiTableFlags Flags =
-			ImGuiTableFlags_Resizable
-			| ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
-			| ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
-			| ImGuiTableFlags_ScrollY
-			| ImGuiTableFlags_SizingFixedFit;
-
-		ImVec2 RegionAvail = ImGui::GetContentRegionAvail();
-		if (ImGui::BeginTable("table_advanced", (int)m_Reader.GetColumnsCount(), Flags, ImVec2(0.0f, RegionAvail.y - 50)))
-		{
-			ImGui::TableSetupScrollFreeze(0, 1);
-			for (size_t i = 0; i < m_ColumnsIds.size(); i++)
-			{
-				ImGui::TableSetupColumn(std::to_string(i).data(), i == (m_ColumnsIds.size() - 1) ? ImGuiTableColumnFlags_WidthStretch : 0, 0.0f, (ImGuiID)i);
-			}
-			ImGui::TableNextRow();
-			for (size_t i = 0; i < m_ColumnsIds.size(); i++)
-			{
-				ImGui::PushID(i);
-				if (ImGui::TableSetColumnIndex((int)i))
-				{
-					if (ImGui::Button(m_ColumnsIds[i] < m_Names.size() ? m_Names[m_ColumnsIds[i]].data() : std::to_string(m_ColumnsIds[i]).data(), ImVec2(-1, 0)))
-					{
-						std::cout << m_ColumnsIds[i] << std::endl;
-						if (m_ColumnsIds[i] >= m_Names.size())
-							ImGui::OpenPopup("ColumnMenu");
-					}
-					if (ImGui::BeginPopup("ColumnMenu"))
-					{
-						if (ImGui::Button(u8"Удалить данные столбца"))
-						{
-							m_ColumnsIds.erase(m_ColumnsIds.begin() + i);
-							m_Reader.RemoveColumn(i);
-							ImGui::CloseCurrentPopup();
-						}
-						ImGui::EndPopup();
-					}
-					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-					{
-						ImGui::SetDragDropPayload("SwapIds", &i, sizeof(int));
-						ImGui::Text("Swap");
-						ImGui::EndDragDropSource();
-					}
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SwapIds"))
-						{
-							int payload_i = *(const int*)payload->Data;
-							std::swap(m_ColumnsIds[i], m_ColumnsIds[payload_i]);
-						}
-						ImGui::EndDragDropTarget();
-					}
-				}
-				ImGui::PopID();
-			}
-
-			ImGuiListClipper clipper;
-			clipper.Begin((int)m_Reader.GetRowsCount());
-			while (clipper.Step())
-			{
-				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-				{
-					ImGui::PushID(i);
-					ImGui::TableNextRow();
-
-					for (size_t j = 0; j < m_Reader.GetColumnsCount(); j++)
-					{
-						if (ImGui::TableSetColumnIndex((int)j))
-						{
-							ImGui::TextUnformatted(m_Reader[i][j].data());
-						}
-					}
-
-					ImGui::PopID();
-				}
-			}
-			ImGui::EndTable();
-		}
+		m_Table->Draw();
 	}
+
 	void TabCsvElectricity::DrawFailed()
 	{
-		ImGui::Text(u8"Не получилось открыть файл: %s\nПопробуйте открыть заново!", m_Reader.GetFileName().data());
+		ImGui::Text(u8"Не получилось открыть файл: %s\nПопробуйте открыть заново!", m_Reader->GetFileName().data());
 		if (ImGui::Button(u8"Закрыть"))
 		{
 			Close();
@@ -157,17 +80,17 @@ namespace LM
 
 	void TabCsvElectricity::DrawAdd()
 	{
-		size_t NumberColId = GetColId(ColumnName::NUMBER);
+		size_t NumberColId = m_Table->GetColId((size_t)ColumnName::NUMBER);
 		if (ImGui::Button(u8"Добавить"))
 		{
 			// Проверка совпадения на участки 
-			m_CheckData = TabCsvElectricityCheckData(m_DataBase->GetHomesteadsCount(), m_Reader.GetRowsCount());
+			m_CheckData = TabCsvElectricityCheckData(m_DataBase->GetHomesteadsCount(), m_Reader->GetRowsCount());
 			//std::cout << "NumberColId: " << NumberColId << std::endl;
 			for (size_t i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
 			{
-				for (int j = 0; j < m_Reader.GetRowsCount(); j++)
+				for (int j = 0; j < m_Reader->GetRowsCount(); j++)
 				{
-					if (m_Reader.GetCell(j, NumberColId) == m_DataBase->GetHomestead(i)->GetNumber())
+					if (m_Reader->GetCell(j, NumberColId) == m_DataBase->GetHomestead(i)->GetNumber())
 					{
 						m_CheckData.CheckDataBase[i] = true;
 						m_CheckData.CheckCsv[j] = true;
@@ -190,16 +113,16 @@ namespace LM
 				ImGui::PushID(i);
 				auto t = m_CheckData.FixPair.find(i);
 				std::string ButtonName = m_DataBase->GetHomestead(i)->GetNumber().data() +
-					(m_CheckData.FixPair.find(i) == m_CheckData.FixPair.end() ? "" : " -> "s + m_Reader.GetCell(m_CheckData.FixPair[i], NumberColId).data());
+					(m_CheckData.FixPair.find(i) == m_CheckData.FixPair.end() ? "" : " -> "s + m_Reader->GetCell(m_CheckData.FixPair[i], NumberColId).data());
 				if (ImGui::Button(ButtonName.data()))
 				{
 					ImGui::OpenPopup("Выбор участка для фикса");
 				}
 				if (ImGui::BeginPopup("Выбор участка для фикса"))
 				{
-					for (int j = 0; j < m_Reader.GetRowsCount(); j++)
+					for (int j = 0; j < m_Reader->GetRowsCount(); j++)
 					{
-						if (ImGui::Selectable(m_Reader.GetCell(j, NumberColId).data()))
+						if (ImGui::Selectable(m_Reader->GetCell(j, NumberColId).data()))
 						{
 							m_CheckData.FixPair[i] = j;
 							ImGui::CloseCurrentPopup();
@@ -220,7 +143,7 @@ namespace LM
 					continue;
 
 				ImGui::PushID(i);
-				ImGui::Text("  %s", m_Reader.GetCell(i, NumberColId).data(), std::to_string(m_CheckData.CheckCsv[i]).data());
+				ImGui::Text("  %s", m_Reader->GetCell(i, NumberColId).data(), std::to_string(m_CheckData.CheckCsv[i]).data());
 				ImGui::PopID();
 			}
 			ImGui::EndChild();
@@ -252,17 +175,16 @@ namespace LM
 
 	void TabCsvElectricity::Add()
 	{
-		size_t NumberColId = std::find(m_ColumnsIds.begin(), m_ColumnsIds.end(), (size_t)ColumnName::NUMBER) - m_ColumnsIds.begin();
 		for (size_t i = 0; i < m_CheckData.CheckCsv.size(); i++)
 		{
 			if (m_CheckData.CheckCsv[i])
 			{
-				//Date DateEA(m_Reader.GetCell(i, GetColId(ColumnName::DATE)));
-				//KiloWatt DayEA(m_Reader.GetCell(i, GetColId(ColumnName::DAY)).data());
-				//KiloWatt NightEA(m_Reader.GetCell(i, GetColId(ColumnName::NIGHT)).data());
+				//Date DateEA(m_Reader->GetCell(i, GetColId(ColumnName::DATE)));
+				//KiloWatt DayEA(m_Reader->GetCell(i, GetColId(ColumnName::DAY)).data());
+				//KiloWatt NightEA(m_Reader->GetCell(i, GetColId(ColumnName::NIGHT)).data());
 				//
 				//ElectricityAccrual EA({ DateEA, DayEA, NightEA, m_Costs });
-				m_DataBase->AddElectricityAccrual(GetIdByNumber(m_Reader.GetCell(i, GetColId(ColumnName::NUMBER))), CreateAccrual(i));
+				m_DataBase->AddElectricityAccrual(GetIdByNumber(m_Reader->GetCell(i, m_Table->GetColId((size_t)ColumnName::NUMBER))), CreateAccrual(i));
 			}
 		}
 		for (auto [HsId, CsvId] : m_CheckData.FixPair)
@@ -273,9 +195,9 @@ namespace LM
 
 	ElectricityAccrual TabCsvElectricity::CreateAccrual(size_t _CsvId)
 	{
-		Date DateEA(m_Reader.GetCell(_CsvId, GetColId(ColumnName::DATE)));
-		KiloWatt DayEA(m_Reader.GetCell(_CsvId, GetColId(ColumnName::DAY)).data());
-		KiloWatt NightEA(m_Reader.GetCell(_CsvId, GetColId(ColumnName::NIGHT)).data());
+		Date		DateEA(	m_Reader->GetCell(_CsvId, m_Table->GetColId((size_t)ColumnName::DATE)));
+		KiloWatt	DayEA(	m_Reader->GetCell(_CsvId, m_Table->GetColId((size_t)ColumnName::DAY)).data());
+		KiloWatt	NightEA(m_Reader->GetCell(_CsvId, m_Table->GetColId((size_t)ColumnName::NIGHT)).data());
 
 		return ElectricityAccrual({ DateEA, DayEA, NightEA, m_Costs });
 	}
@@ -289,12 +211,6 @@ namespace LM
 				return i;
 			}
 		}
-	}
-
-	size_t TabCsvElectricity::GetColId(ColumnName _ColName)
-	{
-		return std::find(m_ColumnsIds.begin(), m_ColumnsIds.end(), (size_t)_ColName) - m_ColumnsIds.begin();
-
 	}
 
 	void TabCsvElectricity::DrawChildName(std::string_view _Name)

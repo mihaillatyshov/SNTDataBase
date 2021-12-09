@@ -2,9 +2,9 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "ITable.h"
-#include "TableElement.h"
 #include "Core/Base.h"
 
 namespace LM

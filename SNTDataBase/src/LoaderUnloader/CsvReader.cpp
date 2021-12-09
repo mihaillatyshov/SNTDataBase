@@ -29,6 +29,8 @@ namespace LM
 				return V1.size() > V2.size(); 
 			}
 		)->size(), size);
+		std::for_each(m_Cells.begin(), m_Cells.end(), [size](std::vector<std::string>& Row) { Row.resize(size); });
+		m_ColumnsCount = size;
 	}
 
 	void CsvReader::DebugPrint() const
@@ -83,6 +85,8 @@ namespace LM
 		m_RowsCount = m_Cells.size();
 		if (m_RowsCount > 0) 
 			m_ColumnsCount = m_Cells[0].size();
+
+		FillEmptyColumns(0);
 	}
 
 }
