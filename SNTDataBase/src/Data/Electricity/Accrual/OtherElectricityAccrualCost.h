@@ -16,7 +16,8 @@ namespace LM
 
 		bool DrawEdit();
 
-		inline const Money& GetMoney() const { return m_Money; }
+		inline const Money&			GetMoney()	const { return m_Money; }
+		inline const std::string&	GetName()	const { return m_Name; }
 
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);

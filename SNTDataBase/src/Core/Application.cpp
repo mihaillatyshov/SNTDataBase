@@ -18,6 +18,7 @@
 #include "Utils/Time.h"
 #include "Utils/ImGuiUtils.h"
 #include "Utils/StreamUtils.h"
+#include "Utils/Converter.h"
 
 namespace fs = std::filesystem;
 
@@ -189,18 +190,6 @@ namespace LM
 	{
 		if (ImGui::BeginMenu(u8"Файл"))
 		{
-			//if (ImGui::MenuItem("New", "Ctrl+N"))
-			//{
-			//}
-			//if (ImGui::MenuItem("Open..", "Ctrl+O"))
-			//{
-			//	if (!OpenWindow)
-			//	{
-			//		OpenWindow = true;
-			//		OpenFolder = LastFolder;
-			//		OpenFolder = "I:/MultiMC/instances/VG/.minecraft/saves/mapwriter_sp_worlds/";
-			//	}
-			//}
 			if (ImGui::MenuItem("Save", "Ctrl+S"))
 			{
 				SaveDataBase();
@@ -223,24 +212,6 @@ namespace LM
 	{
 		if (ImGui::BeginMenu(u8"Окно"))
 		{
-			//if (ImGui::MenuItem("New", "Ctrl+N"))
-			//{
-			//}
-			//if (ImGui::MenuItem("Open..", "Ctrl+O"))
-			//{
-			//	if (!OpenWindow)
-			//	{
-			//		OpenWindow = true;
-			//		OpenFolder = LastFolder;
-			//		OpenFolder = "I:/MultiMC/instances/VG/.minecraft/saves/mapwriter_sp_worlds/";
-			//	}
-			//}
-			//if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
-			//if (ImGui::MenuItem("Close", "Ctrl+W")) {  }
-			////if (ImGui::DragFloat("WidgetSize", &WidgetSize.x))
-			////{
-			////	WidgetSize.y = WidgetSize.x;
-			////}
 			if (ImGui::MenuItem(u8"Демо ImGui", NULL, &m_ShowDemoWindow))
 			{
 			}
@@ -268,7 +239,6 @@ namespace LM
 		ImGui::SetNextWindowSize(viewport->Size);
 		ImGui::SetNextWindowViewport(viewport->ID);
 
-		//ImGui::SetNextWindowBgAlpha(0.0f);
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
@@ -287,13 +257,6 @@ namespace LM
 			DrawElectricityOpeningBalance();
 
 			m_TabCsvSelector->Draw();
-
-			//if (ImGui::Begin("Tests"))
-			//{
-			//	for (int i = 0; i < m_Tests.size(); i++)
-			//		ImGui::Text(m_Tests[i].c_str());
-			//}
-			//ImGui::End();
 
 			ImGui::EndTabBar();
 		}
@@ -387,13 +350,6 @@ namespace LM
 
 		if (ImGui::BeginTabItem(u8"Членские взносы"))
 		{
-			//if (!m_HomesteadsTable->HasSelectedRow())
-			//{
-			//	ImGui::Text(u8"Участок не выбран!");
-			//	ImGui::EndTabItem();
-			//	return;
-			//}
-
 			DrawCheckMembershipAccrual();
 
 			auto LocalTime = Time::GetLocalTime();
@@ -686,6 +642,25 @@ namespace LM
 			"КВт за последий месяц Общее", "КВт за последий месяц День", "КВт за последий месяц Ночь",
 			"Сумма Общее", "Сумма День", "Сумма Ночь", "Потери"
 		};
+		for (size_t i = 0; i < m_DataBase->GetHomesteadsCount(); i++)
+		{
+			const auto& Hs = m_DataBase->GetHomestead(i);
+			const auto& El = Hs->GetElectricity();
+
+			if (El.GetAccrualsCount() < 2)
+				continue;
+			
+			const auto& AccLast = El.GetAccrual(El.GetAccrualsCount() - 1);
+			for (const auto& Other : AccLast->GetCosts().GetOthres())
+			{
+				Names.push_back(Utf8ToStr(Other.GetName()));
+			}
+			break;
+		}
+
+		Names.insert(Names.end(), { "Предыдущий месяц", "Текщий месяц", "Платеж дата", "Платеж Сумма", "Долг на сегодняшний день" });
+		
+
 		for (const auto& Name : Names)
 		{
 			Fout << Name << SepCSV;

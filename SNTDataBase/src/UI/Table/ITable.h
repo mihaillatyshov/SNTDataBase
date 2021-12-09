@@ -21,8 +21,6 @@ namespace LM
 			| ImGuiTableFlags_SizingFixedFit;
 	protected:
 		std::vector<std::string> m_Names;
-
-		ImGuiListClipper m_Clipper;
 	};
 
 }

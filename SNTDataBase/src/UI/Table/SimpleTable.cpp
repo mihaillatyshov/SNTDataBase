@@ -23,10 +23,11 @@ namespace LM
 			}
 			ImGui::TableHeadersRow();
 
-			m_Clipper.Begin((int)m_GetElementsCount());
-			while (m_Clipper.Step())
+			ImGuiListClipper clipper;
+			clipper.Begin((int)m_GetElementsCount());
+			while (clipper.Step())
 			{
-				for (int i = m_Clipper.DisplayStart; i < m_Clipper.DisplayEnd; i++)
+				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 				{
 					ImGui::PushID(i);
 					ImGui::TableNextRow();

@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <algorithm>
 
+#include "Utils/Converter.h"
+
 namespace LM
 {
 
@@ -75,12 +77,12 @@ namespace LM
 			while (Pos != std::string::npos)
 			{
 				//std::cout << Start << ";" << Pos - Start << " : " << Line.substr(Start, Pos - Start) << "    ";
-				m_Cells.back().push_back(Line.substr(Start, Pos - Start));
+				m_Cells.back().push_back(StrToUtf8(Line.substr(Start, Pos - Start)));
 	
 				Start = Pos + 1;
 				Pos = Line.find(';', Start);
 			}
-			m_Cells.back().push_back(Line.substr(Start));
+			m_Cells.back().push_back(StrToUtf8(Line.substr(Start)));
 		}
 		m_RowsCount = m_Cells.size();
 		if (m_RowsCount > 0) 

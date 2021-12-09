@@ -3,13 +3,14 @@
 #include <string>
 #include <vector>
 
+#include "ITable.h"
 #include "TableElement.h"
 #include "Core/Base.h"
 
 namespace LM
 {
 
-	class Table
+	class Table : public ITable
 	{
 	public:
 		typedef std::function<const Ref<const TableElement>(size_t i)> GE_F;
@@ -22,10 +23,8 @@ namespace LM
 		inline void SetUnselected() { m_SelectedId = -1; }
 		inline bool HasSelectedRow() { return m_SelectedId != -1; }
 
-		void Draw();
-
+		void Draw() override;
 	protected:
-		std::vector<std::string> m_Names;
 		int m_SelectedId = -1;
 
 		GE_F	m_GetElement;

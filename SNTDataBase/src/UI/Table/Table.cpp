@@ -6,22 +6,15 @@
 namespace LM
 {
 	Table::Table(const std::vector<std::string>& _Names, const GE_F& _GetElement, const GEC_F& _GetElementsCount)
-		: m_Names(_Names), m_GetElement(_GetElement), m_GetElementsCount(_GetElementsCount)
+		: ITable(_Names), m_GetElement(_GetElement), m_GetElementsCount(_GetElementsCount)
 	{
 
 	}
 
 	void Table::Draw()
 	{
-		ImGuiTableFlags Flags =
-			ImGuiTableFlags_Resizable
-			| ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
-			| ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders
-			| ImGuiTableFlags_ScrollY
-			| ImGuiTableFlags_SizingFixedFit;
-
 		ImVec2 RegionAvail = ImGui::GetContentRegionAvail();
-		if (ImGui::BeginTable("table_advanced", (int)m_Names.size(), Flags, ImVec2(0.0f, RegionAvail.y - 50)))
+		if (ImGui::BeginTable("table_advanced", (int)m_Names.size(), s_Flags, ImVec2(0.0f, RegionAvail.y - 50)))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1);
 			for (size_t i = 0; i < m_Names.size(); i++)
