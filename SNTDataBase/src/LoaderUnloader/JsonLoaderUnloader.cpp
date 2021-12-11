@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Utils/JsonUtils.h"
+#include "Data/Constants/Constants.h"
 
 namespace LM
 {
@@ -23,20 +24,23 @@ namespace LM
 		if (!JS.is_object())
 			return;
 
+		if (JS["Constants"].is_object())
+			Constants::Get()->SetJson(JS["Constants"]);
+
 		m_DataBase->SetJson(JS["DataBase"]); //nlohmann::SetVector(m_DataBase->m_Homesteads, JS, "Homesteads");
 
 		if (JS["OpeningBalance"].is_object())
 			OpeningBalance::SetDateJson(JS["OpeningBalance"]["Date"]);
 
 		if (JS["MembershipFee"].is_object())
-		{
 			MembershipFee::SetAccrualsJson(JS["MembershipFee"], "Accruals");
-		}
 	}
 
 	void JsonLoaderUnloader::Unload()
 	{
 		nlohmann::json JS;
+
+		JS["Constants"] = Constants::Get()->GetJson();
 
 		JS["DataBase"] = m_DataBase->GetJson(); //nlohmann::GetVector(m_DataBase->m_Homesteads);
 

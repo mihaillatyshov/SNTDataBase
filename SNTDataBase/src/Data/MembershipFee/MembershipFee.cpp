@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "Data/Constants/Constants.h"
 #include "Utils/JsonUtils.h"
 #include "Utils/Time.h"
 
@@ -72,7 +73,7 @@ namespace LM
 			if (std::find_if(s_Accruals.begin(), s_Accruals.end(),
 				[=](const MembershipFeeAccrual& _Acc) { return _Acc.GetDate() == CheckDate; }) == s_Accruals.end())
 			{
-				_AccrualsToAdd.push_back(MembershipFeeAccrual(CheckDate, MembershipFeeAccrual::GetConstantAmount()));
+				_AccrualsToAdd.push_back(MembershipFeeAccrual(CheckDate, Constants::Get()->GetAccrualMF()));
 			}
 		}
 	}

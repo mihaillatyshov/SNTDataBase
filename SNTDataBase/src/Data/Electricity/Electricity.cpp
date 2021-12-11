@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "Data/Constants/Constants.h"
 #include "Utils/JsonUtils.h"
 
 namespace LM
@@ -50,12 +51,12 @@ namespace LM
 		// 101.21       * 3
 		// 303.63       / 100
 		//   3.04
-		return (_Day + _Night) * LossesPecent;
+		return (_Day + _Night) * Constants::Get()->GetElLosses();
 	}
 
 	Money Electricity::CalcWithBenefits(const Money& _Day, const Money& _Night, bool _HasBenefits)
 	{
-		return _HasBenefits ? (_Day * BenefitPecent + _Night * BenefitPecent) : (_Day + _Night);
+		return _HasBenefits ? (_Day * Constants::Get()->GetElBenefit() + _Night * Constants::Get()->GetElBenefit()) : (_Day + _Night);
 	}
 
 	Money Electricity::CalcAccrualsToDate(const Date& _Date, const Privilege& _Privilege) const
@@ -98,8 +99,8 @@ namespace LM
 		*_Losses = CalcLosses(*_Day, *_Night);
 		if (_Privilege.GetHasPrivilege(m_Accruals[_AccId]->GetDate()))
 		{
-			*_Day = *_Day * BenefitPecent;
-			*_Night = *_Night * BenefitPecent;
+			*_Day = *_Day * Constants::Get()->GetElBenefit();
+			*_Night = *_Night * Constants::Get()->GetElBenefit();
 		}
 	}
 

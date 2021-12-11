@@ -25,7 +25,7 @@ namespace LM
 		{
 			[=]()
 			{
-				m_Data.Date.Draw();
+				m_Data.When.Draw();
 			},
 			[=]()
 			{
@@ -50,7 +50,7 @@ namespace LM
 	nlohmann::basic_json<> ElectricityAccrual::GetJson() const
 	{
 		nlohmann::basic_json<> Result;
-		Result["Date"]	= m_Data.Date.GetJson();
+		Result["Date"]	= m_Data.When.GetJson();
 		Result["Day"]	= m_Data.Day.GetJson();
 		Result["Night"] = m_Data.Night.GetJson();
 		Result["Costs"] = m_Data.Costs.GetJson();
@@ -63,7 +63,7 @@ namespace LM
 		if (!_JS.is_object())
 			return;
 
-		m_Data.Date.SetJson(	_JS["Date"]);
+		m_Data.When.SetJson(	_JS["Date"]);
 		m_Data.Day.SetJson(		_JS["Day"]);
 		m_Data.Night.SetJson(	_JS["Night"]);
 		m_Data.Costs.SetJson(	_JS["Costs"]);

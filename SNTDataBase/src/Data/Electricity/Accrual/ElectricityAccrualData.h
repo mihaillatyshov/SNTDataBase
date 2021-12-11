@@ -1,14 +1,18 @@
 #pragma once
 
-#include "../KiloWatt.h"
 #include "Data/Date/Date.h"
+#include "Data/Electricity/KiloWatt.h"
 #include "ElectricityAccrualCosts.h"
 
 namespace LM
 {
+	
 	struct ElectricityAccrualData
 	{
-		Date					Date;
+		ElectricityAccrualData();
+		ElectricityAccrualData(const Date& _When, const KiloWatt& _Day, const KiloWatt& _Night, const ElectricityAccrualCosts& _Costs);
+
+		Date					When;
 		KiloWatt				Day;
 		KiloWatt				Night;
 		ElectricityAccrualCosts Costs;

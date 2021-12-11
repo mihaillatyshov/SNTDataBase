@@ -107,6 +107,8 @@ namespace LM
 		m_ElectricityPaymentTabsCollection		= CreateRef<TabsCollection>(u8"платежа",	m_ElectricityPaymentsTable);
 
 		m_TabCsvSelector = CreateRef<TabCsvSelector>(m_DataBase);
+
+		m_TabConstants = CreateRef<TabConstants>(m_DataBase);
 	}
 
 	Application::~Application()
@@ -215,6 +217,10 @@ namespace LM
 			if (ImGui::MenuItem(u8"Демо ImGui", NULL, &m_ShowDemoWindow))
 			{
 			}
+			if (ImGui::MenuItem(u8"Константы", NULL, m_TabConstants->GetIsOpen()))
+			{
+				m_TabConstants->SwitchOpen();
+			}
 			ImGui::EndMenu();
 		}
 	}
@@ -257,6 +263,7 @@ namespace LM
 			DrawElectricityOpeningBalance();
 
 			m_TabCsvSelector->Draw();
+			m_TabConstants->Draw();
 
 			ImGui::EndTabBar();
 		}

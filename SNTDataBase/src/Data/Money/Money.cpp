@@ -28,14 +28,14 @@ namespace LM
 		ImGui::Text(u8"%lld.%02lld руб", abs(m_Amount / 100), abs(m_Amount % 100));
 	}
 
-	bool Money::DrawEdit(std::string_view _FieldName, float _ItemWidth)
+	bool Money::DrawEdit(std::string_view _Label, float _Width)
 	{
 		ImGuiDirtyDecorator DirtyDecorator;
 		
 		std::string Buffer = GetString();
 		
-		ImGui::PushItemWidth(_ItemWidth);
-		if (ImGui::InputText(_FieldName.data(), &Buffer, ImGuiInputTextFlags_CharsDecimal))
+		ImGui::PushItemWidth(_Width);
+		if (ImGui::InputText(_Label.data(), &Buffer, ImGuiInputTextFlags_CharsDecimal))
 		{
 			m_Amount = GetIntFromSplitStr(Buffer, 2u);
 			DirtyDecorator(true);
@@ -56,7 +56,6 @@ namespace LM
 	{
 		nlohmann::basic_json<> Result;
 		Result["Amount"] = m_Amount;
-		Money(4, 3);
 		return Result;
 	}
 

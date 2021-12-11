@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "../KiloWatt.h"
+#include "Data/Electricity/KiloWatt.h"
 #include "ElectricityAccrualCosts.h"
 #include "Data/Date/Date.h"
 #include "UI/Table/TableElement.h"
@@ -22,7 +22,7 @@ namespace LM
 
 		void Edit(Ref<const TabDataStruct> _TabDS);
 
-		inline const Date& GetDate()							const { return m_Data.Date; }
+		inline const Date& GetDate()							const { return m_Data.When; }
 		inline const KiloWatt& GetDay()							const { return m_Data.Day; }
 		inline const KiloWatt& GetNight()						const { return m_Data.Night; }
 		inline const ElectricityAccrualCosts& GetCosts()		const { return m_Data.Costs; }

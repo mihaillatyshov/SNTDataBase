@@ -7,12 +7,13 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Base.h"
 #include "Data/DataBase/DataBase.h"
 #include "UI/Table/Table.h"
 #include "UI/Table/SimpleTable.h"
 #include "UI/Tabs/TabsCollection/TabsCollection.h"
 #include "UI/Tabs/TabCsv/TabCsvSelector.h"
-#include "Base.h"
+#include "UI/Tabs/TabConstants/TabConstants.h"
 
 
 namespace LM
@@ -84,6 +85,8 @@ namespace LM
 		Ref<TabsCollection> m_ElectricityPaymentTabsCollection;
 
 		Ref<TabCsvSelector> m_TabCsvSelector;
+
+		Ref<TabConstants>	m_TabConstants;
 	};
 
 }

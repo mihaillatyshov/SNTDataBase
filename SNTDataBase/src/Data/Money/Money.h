@@ -1,19 +1,12 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+
 #include "Data/Electricity/KiloWatt.h"
+#include "Data/Percent/Percent.h"
 
 namespace LM
 {
-
-	class Percent
-	{
-	public:
-		Percent(uint64_t _Percent) : Val(_Percent) { } 
-		inline uint64_t Get() const { return Val; }
-	protected:
-		uint64_t Val;
-	};
 
 	class Money
 	{
@@ -23,7 +16,7 @@ namespace LM
 
 		void Draw() const;
 		void DrawAbs() const;
-		bool DrawEdit(std::string_view _FieldName = "", float _ItemWidth = 250.0f);
+		bool DrawEdit(std::string_view _Label = "", float _Width = 250.0f);
 
 		std::string GetString() const;
 		inline int64_t Get()		const { return m_Amount; }

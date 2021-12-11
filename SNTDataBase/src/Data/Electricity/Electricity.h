@@ -52,9 +52,6 @@ namespace LM
 		nlohmann::basic_json<> GetJson() const;
 		void SetJson(nlohmann::basic_json<> _JS);
 	protected:
-		static inline Percent BenefitPecent = Percent(70);
-		static inline Percent LossesPecent  = Percent(3);
-	protected:
 		Money							m_All;
 		Money							m_OpeningBalance;
 		VectorRef<Payment>				m_Payments;

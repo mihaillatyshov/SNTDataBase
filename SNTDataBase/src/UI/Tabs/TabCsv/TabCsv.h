@@ -12,7 +12,7 @@ namespace LM
 	public:
 		TabCsv(std::string_view _FileName, const std::vector<std::string>& _Names, Ref<DataBase> _DataBase);
 		virtual void Draw() = 0;
-		void Close() { m_IsOpen = false; }
+		inline void Close() { m_IsOpen = false; }
 	protected:
 		bool m_IsOpen = true;
 		Ref<DataBase>	m_DataBase;
